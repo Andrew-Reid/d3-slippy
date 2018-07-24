@@ -143,7 +143,7 @@ function geoTile() {
 		return "translate(" + r(translate[0] * scale) + "," + r(translate[1] * scale) + ") scale(" + k + ")";
 	}
 	
-	// To break out in the future ?:
+	// To break out in the future, at least use switch ?:
 	geoTile.tileSet = function(_) {
 		// CartoDB:
 		if(_ == "CartoDB_Positron") {
@@ -329,27 +329,6 @@ function geoTile() {
 
 }
 
-/*
-function geoTileSource(_) {
-	var sources = {
-		ESRI_WorldTerrain : function(d) { 
-		  return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png"; 
-		},
-		ESRI_WorldShadedRelief : function(d) {
-		  return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";		
-		}
-		
-	
-	
-	
-	
-	}
-
-	
-	return sources[_];
-
-}
-	*/	
 
   exports.geoTile = geoTile;
  // exports.geoTileSource = geoTileSource;
