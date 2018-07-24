@@ -59,9 +59,12 @@ function geoTile() {
 	}
 	geoTile.projection = function() {
 		return p;
-	}		
+	}
+	geoTile.attribution = function(_) {
+		return arguments.length ? (a = _, geoTile) : a;
+	}
 	
-	// Projection methods:
+	// Standard Projection methods:
 	geoTile.invert = function(_) {
 		return p.invert(_);
 	}
@@ -93,6 +96,7 @@ function geoTile() {
 	}
 
 	// Tile Methods:	
+	// Calculate Tiles:
 	geoTile.tiles = function() {
 		var size = pk * tk * tau;
 		var z = Math.max(Math.log(size) / Math.LN2 - 8, 0); // z, assuming image size of 256.  
@@ -119,7 +123,7 @@ function geoTile() {
 		return set;
 	
 	}
-	
+	// Assign Tiles to a Selection:
 	geoTile.tile = function(g) {
 		
 		var set = geoTile.tiles();
@@ -136,8 +140,7 @@ function geoTile() {
 			.attr("height", 256);	
 	}
 	
-	
-	
+	// Helper stringify	
 	function stringify(scale, translate) {
 		var k = scale / 256, r = scale % 1 ? Number : Math.round;
 		return "translate(" + r(translate[0] * scale) + "," + r(translate[1] * scale) + ") scale(" + k + ")";
