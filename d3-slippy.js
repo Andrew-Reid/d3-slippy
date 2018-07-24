@@ -143,7 +143,7 @@ function geoTile() {
 		return "translate(" + r(translate[0] * scale) + "," + r(translate[1] * scale) + ") scale(" + k + ")";
 	}
 	
-	// To break out in the future, at least use switch ?:
+	// To break out in the future, use a switch at least ?:
 	geoTile.tileSet = function(_) {
 		// CartoDB:
 		if(_ == "CartoDB_Positron") {
@@ -158,7 +158,7 @@ function geoTile() {
 				return "https://cartodb-basemaps-b.global.ssl.fastly.net/light_nolabels/"+d.z+"/"+d.x+"/"+d.y+".png";
 			}
 		}			
-		else if(_ == "CartoDB_PositronOnlyLaebls") {
+		else if(_ == "CartoDB_PositronOnlyLabels") {
 			a = "© OpenStreetMap © CartoDB";
 			source = function(d) {
 				return "https://cartodb-basemaps-b.global.ssl.fastly.net/light_only_labels/"+d.z+"/"+d.x+"/"+d.y+".png";
@@ -170,13 +170,13 @@ function geoTile() {
 				return "https://cartodb-basemaps-b.global.ssl.fastly.net/dark_all/"+d.z+"/"+d.x+"/"+d.y+".png";
 			}
 		}
-		else if(_ == "CartoDB_DarkMatterOnlyLaebls") {
+		else if(_ == "CartoDB_DarkMatterNoLabels") {
 			a = "© OpenStreetMap © CartoDB";
 			source = function(d) {
-				return "https://cartodb-basemaps-b.global.ssl.fastly.net/dark_only_labels/"+d.z+"/"+d.x+"/"+d.y+".png";
+				return "https://cartodb-basemaps-b.global.ssl.fastly.net/dark_nolabels/"+d.z+"/"+d.x+"/"+d.y+".png";
 			}
 		}
-		else if(_ == "CartoDB_DarkMatterOnlyLaebls") {
+		else if(_ == "CartoDB_DarkMatterOnlyLabels") {
 			a = "© OpenStreetMap © CartoDB";
 			source = function(d) {
 				return "https://cartodb-basemaps-b.global.ssl.fastly.net/dark_only_labels/"+d.z+"/"+d.x+"/"+d.y+".png";
@@ -329,9 +329,8 @@ function geoTile() {
 
 }
 
-
   exports.geoTile = geoTile;
- // exports.geoTileSource = geoTileSource;
+
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
