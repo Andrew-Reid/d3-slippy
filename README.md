@@ -1,6 +1,6 @@
 # d3-slippy
 
-This is just experimental at this point. The goal is to minimize the interface with tile services and tile coordinates, allowing use of geographic coordiantes only.
+This is just experimental at this point. The goal is to minimize the interface with tile services and tile coordinates, allowing use of geographic coordinates only while reducing code needed to create a slippy map.
 
 A demonstration of this experiment can be found [here](https://bl.ocks.org/Andrew-Reid/a956ff105e12915e71617ff0e469664e).
 
