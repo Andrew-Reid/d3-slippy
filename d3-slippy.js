@@ -94,6 +94,9 @@ function geoTile() {
 	geoTile.zoomIdentity = function() {
 		return d3.zoomIdentity.translate(px,py).scale(tk).translate(0,0);
 	}
+	geoTile.zoomTransform = function(t) {
+		tx = t.x, ty = t.y, tk = t.k; p.translate([tx,ty]); p.scale(pk*tk); return geoTile;
+	}
 
 	// Tile Methods:	
 	// Calculate Tiles:
