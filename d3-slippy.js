@@ -33,11 +33,38 @@ function geoTile() {
 	  .translate([px,py])
       .center(pc);
 	  
+	// Tile source:
+	var source = function(d) {
+		return "http://" + "abc"[d.y % 3] + ".tile.openstreetmap.org/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
+	}
+	var a = "Tiles © OpenStreetMap contributors";
+	  
 	function geoTile(_) {
+	
 		return p(_);
 	}
-
+	
+	// General Methods
+	geoTile.width = function(_) {
+		return arguments.length ? (w = _, geoTile) : w;
+	}
+	geoTile.height = function(_) {
+		return arguments.length ? (h = _, geoTile) : h;
+	}
+	geoTile.size = function(_) {
+		return arguments.length > 1 ? (h = _[0], h = _[1], geoTile) : [w,h];
+	}
+	geoTile.source = function(_) {
+		return arguments.length ? (source = _, geoTile) : source;
+	}
+	geoTile.projection = function() {
+		return p;
+	}		
+	
 	// Projection methods:
+	geoTile.invert = function(_) {
+		return p.invert(_);
+	}
 	geoTile.center = function(_) {
 		return arguments.length ? (pc = _, p.center(pc), geoTile): pc;
 	}	
@@ -53,21 +80,8 @@ function geoTile() {
 	geoTile.fitExtent = function(e,f) {
 		return arguments.length > 1 ? (p.fitExtent(e,f),px = p.translate()[0],py = p.translate()[1],pk = p.scale(), geoTile) : "n/a";
 	}
-	
-	// Size:
-	geoTile.width = function(_) {
-		return arguments.length ? (w = _, geoTile) : w;
-	}
-	geoTile.height = function(_) {
-		return arguments.length ? (h = _, geoTile) : h;
-	}
-
-	// Tile source:
-	var source = function(d) {
-		return "http://" + "abc"[d.y % 3] + ".tile.openstreetmap.org/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
-	}	
-	
-	// Zoom functions:
+		
+	// Zoom Methods:
 	geoTile.zoomScale = function(_) {
 		return arguments.length ? (tk = _, p.scale(pk*tk), geoTile) : tk;
 	}
@@ -78,14 +92,10 @@ function geoTile() {
 		return d3.zoomIdentity.translate(px,py).scale(tk).translate(0,0);
 	}
 
-	
-	geoTile.projection = function(_) {
-		return p;
-	}	
-	
+	// Tile Methods:	
 	geoTile.tiles = function() {
 		var size = pk * tk * tau;
-		var z = Math.max(Math.log(size) / Math.LN2 - 8, 0); // z, assuming image size of 256.  // what do in case of rounding?
+		var z = Math.max(Math.log(size) / Math.LN2 - 8, 0); // z, assuming image size of 256.  
 		var s = Math.pow(2, z - Math.round(z) + 8);
 		
 		var y0 = p([-180,lim])[1];
@@ -133,30 +143,180 @@ function geoTile() {
 		return "translate(" + r(translate[0] * scale) + "," + r(translate[1] * scale) + ") scale(" + k + ")";
 	}
 	
-	// To break out properly in the future:
+	// To break out in the future ?:
 	geoTile.tileSet = function(_) {
-		if(_ == "ESRI_WorldTerrain") {
+		// CartoDB:
+		if(_ == "CartoDB_Positron") {
+			a = "© OpenStreetMap © CartoDB";
+			source = function(d) {
+				return "https://cartodb-basemaps-b.global.ssl.fastly.net/light_all/"+d.z+"/"+d.x+"/"+d.y+".png";
+			}
+		}		
+		else if(_ == "CartoDB_PositronNoLabels") {
+			a = "© OpenStreetMap © CartoDB";
+			source = function(d) {
+				return "https://cartodb-basemaps-b.global.ssl.fastly.net/light_nolabels/"+d.z+"/"+d.x+"/"+d.y+".png";
+			}
+		}			
+		else if(_ == "CartoDB_PositronOnlyLaebls") {
+			a = "© OpenStreetMap © CartoDB";
+			source = function(d) {
+				return "https://cartodb-basemaps-b.global.ssl.fastly.net/light_only_labels/"+d.z+"/"+d.x+"/"+d.y+".png";
+			}
+		}	
+		else if(_ == "CartoDB_DarkMatter") {
+			a = "© OpenStreetMap © CartoDB";
+			source = function(d) {
+				return "https://cartodb-basemaps-b.global.ssl.fastly.net/dark_all/"+d.z+"/"+d.x+"/"+d.y+".png";
+			}
+		}
+		else if(_ == "CartoDB_DarkMatterOnlyLaebls") {
+			a = "© OpenStreetMap © CartoDB";
+			source = function(d) {
+				return "https://cartodb-basemaps-b.global.ssl.fastly.net/dark_only_labels/"+d.z+"/"+d.x+"/"+d.y+".png";
+			}
+		}
+		else if(_ == "CartoDB_DarkMatterOnlyLaebls") {
+			a = "© OpenStreetMap © CartoDB";
+			source = function(d) {
+				return "https://cartodb-basemaps-b.global.ssl.fastly.net/dark_only_labels/"+d.z+"/"+d.x+"/"+d.y+".png";
+			}
+		}
+		
+		// ESRI
+		else if(_ == "ESRI_WorldTerrain") {
+			a = "Tiles © Esri - Source: USGS, Esri, TANA, DeLorme, and NPS"
 			source = function(d) {
 				return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
 			}
 		}
 		else if (_ == "ESRI_WorldShadedRelief") {
+			a = "Tiles © Esri - Source: Esri";
 			source = function(d) {
 				return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
 			}			
 		}
 		else if (_ == "ESRI_WorldPhysical") {
+			a = "Tiles © Esri - Source: US National Park Service";
 			source = function(d) {
 				return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
 			}			
 		}
 		else if (_ == "ESRI_WorldStreetMap") {
+			a = "Tiles © Esri - Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom";
 			source = function(d) {
 				return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
 			}			
+		}		
+		else if (_ == "ESRI_WorldTopoMap") {
+			a = "Tiles © Esri - Source: Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community";
+			source = function(d) {
+				return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
+			}			
+		}		
+		else if (_ == "ESRI_WorldImagery") {
+			a = "Tiles © Esri - Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community";
+			source = function(d) {
+				return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
+			}		
 		}
+		else if (_ == "ESRI_OceanBasemap") {
+			a = "Tiles © Esri - Source: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri";
+			source = function(d) {
+				return "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
+			}		
+		}		
+		else if (_ == "ESRI_NGWorld") {
+			a = "Tiles © Esri - Source:  National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC";
+			source = function(d) {
+				return "https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
+			}		
+		}
+		else if (_ == "ESRI_Gray") {
+			a = "Tiles © Esri - Source:  National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC";
+			source = function(d) {
+				return "'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
+			}			
+		}
+				
+		// OSM
+		else if (_ == "OSM_Topo") {
+			a = "Tiles © OpenStreetMap contributors";
+			source = function(d) {
+				return "https://tile.opentopomap.org/"+d.z+"/"+d.x+"/"+d.y+".png"; 
+			}
+		}
+		else if (_ == "OSM") {
+			a = "Tiles © OpenStreetMap contributors";
+			source = function(d) {
+				return "https://" + "abc"[d.y % 3] + ".tile.openstreetmap.org/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
+			}		
+		}
+		
+		
+		// STAMEN
+		else if (_ == "Stamen_Toner") {
+			a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
+			source = function(d) {
+				return "https://stamen-tiles.a.ssl.fastly.net/toner/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
+			}			
+		}
+		else if (_ == "Stamen_TonerBackground") {
+			a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
+			source = function(d) {
+				return "https://stamen-tiles.a.ssl.fastly.net/toner-background/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
+			}			
+		}
+		else if (_ == "Stamen_TonerLines") {
+			a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
+			source = function(d) {
+				return "https://stamen-tiles.a.ssl.fastly.net/toner-lines/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
+			}			
+		}
+		else if (_ == "Stamen_TonerLite") {
+			a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
+			source = function(d) {
+				return "https://stamen-tiles.a.ssl.fastly.net/toner-lite/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
+			}			
+		}
+		else if (_ == "Stamen_TonerLite") {
+			a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
+			source = function(d) {
+				return "https://stamen-tiles.a.ssl.fastly.net/toner-lite/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
+			}			
+		}		
+		else if (_ == "Stamen_Terrain") {
+			a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
+			source = function(d) {
+				return "https://stamen-tiles.a.ssl.fastly.net/terrain/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
+			}			
+		}		
+		else if (_ == "Stamen_TerrainBackground") {
+			a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
+			source = function(d) {
+				return "https://stamen-tiles.a.ssl.fastly.net/terrain-background/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
+			}			
+		}	
+		else if (_ == "Stamen_TerrainLines") {
+			a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
+			source = function(d) {
+				return "https://stamen-tiles.a.ssl.fastly.net/terrain-lines/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
+			}			
+		}		
+		else if (_ == "Stamen_Watercolor") {
+			a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY SA."			
+			source = function(d) {
+				return "https://stamen-tiles.a.ssl.fastly.net/watercolor/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
+			}			
+		}			
+		
+		
+		
+		
 		else {
 			// Default:
+			console.log("Unknown Tileset, using OSM");
+			a = "Tiles © OpenStreetMap contributors";
 			source = function(d) {
 				return "http://" + "abc"[d.y % 3] + ".tile.openstreetmap.org/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
 			}
@@ -168,9 +328,31 @@ function geoTile() {
 	return geoTile;
 
 }
+
+/*
+function geoTileSource(_) {
+	var sources = {
+		ESRI_WorldTerrain : function(d) { 
+		  return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png"; 
+		},
+		ESRI_WorldShadedRelief : function(d) {
+		  return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";		
+		}
 		
+	
+	
+	
+	
+	}
+
+	
+	return sources[_];
+
+}
+	*/	
 
   exports.geoTile = geoTile;
+ // exports.geoTileSource = geoTileSource;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
