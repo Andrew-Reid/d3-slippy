@@ -143,7 +143,7 @@ function geoTile() {
 		return "translate(" + r(translate[0] * scale) + "," + r(translate[1] * scale) + ") scale(" + k + ")";
 	}
 	
-	// To break out in the future, use a switch at least ?:
+	// To break out in the future, at least use switch ?:
 	geoTile.tileSet = function(_) {
 		// CartoDB:
 		if(_ == "CartoDB_Positron") {
@@ -182,6 +182,24 @@ function geoTile() {
 				return "https://cartodb-basemaps-b.global.ssl.fastly.net/dark_only_labels/"+d.z+"/"+d.x+"/"+d.y+".png";
 			}
 		}
+		else if(_ == "CartoDB_Voyager") {
+			a = "© OpenStreetMap © CartoDB";
+			source = function(d) {
+				return "https://cartodb-basemaps-b.global.ssl.fastly.net/rastertiles/voyager/"+d.z+"/"+d.x+"/"+d.y+".png";
+			}
+		}
+		/* else if(_ == "CartoDB_VoyagerNoLabels") {
+			a = "© OpenStreetMap © CartoDB";
+			source = function(d) {
+				return "https://cartodb-basemaps-b.global.ssl.fastly.net/rastertiles/voyager-nolabels/"+d.z+"/"+d.x+"/"+d.y+".png";
+			}
+		} 
+		else if(_ == "CartoDB_VoyagerOnlyLabels") {
+			a = "© OpenStreetMap © CartoDB";
+			source = function(d) {
+				return "https://cartodb-basemaps-b.global.ssl.fastly.net/rastertiles/voyager-only_labels/"+d.z+"/"+d.x+"/"+d.y+".png";
+			}
+		} */
 		
 		// ESRI
 		else if(_ == "ESRI_WorldTerrain") {
@@ -233,9 +251,9 @@ function geoTile() {
 			}		
 		}
 		else if (_ == "ESRI_Gray") {
-			a = "Tiles © Esri - Source:  National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC";
+			a = "Tiles © Esri - Source:  Esri, DeLorme, NAVTEQ";
 			source = function(d) {
-				return "'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
+				return "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
 			}			
 		}
 				
@@ -279,12 +297,6 @@ function geoTile() {
 				return "https://stamen-tiles.a.ssl.fastly.net/toner-lite/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
 			}			
 		}
-		else if (_ == "Stamen_TonerLite") {
-			a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
-			source = function(d) {
-				return "https://stamen-tiles.a.ssl.fastly.net/toner-lite/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
-			}			
-		}		
 		else if (_ == "Stamen_Terrain") {
 			a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
 			source = function(d) {
@@ -310,9 +322,6 @@ function geoTile() {
 			}			
 		}			
 		
-		
-		
-		
 		else {
 			// Default:
 			console.log("Unknown Tileset, using OSM");
@@ -330,7 +339,6 @@ function geoTile() {
 }
 
   exports.geoTile = geoTile;
-
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
