@@ -102,7 +102,7 @@ function geoTile() {
 		return arguments.length ? (tk = _, p.scale(pk*tk), geoTile) : tk;
 	}
 	geoTile.zoomTranslate = function(_) {	
-		return arguments.length ? (tx = _[0], ty = _[1], p.translate([tx, ty])): geoTile; 
+		return arguments.length ? (tx = _[0], ty = _[1], p.translate([tx, ty]), geoTile): [tx,ty] 
 	}
 	geoTile.zoomIdentity = function() {
 		return d3.zoomIdentity.translate(px,py).scale(tk).translate(0,0);
