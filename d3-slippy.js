@@ -1,9 +1,9 @@
 //
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'd3-array'], factory) :
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+  typeof define === 'function' && define.amd ? define(['exports'], factory) :
   (factory((global.d3 = global.d3 || {}),global.d3));
-}(this, function (exports,d3Array) { 'use strict';
+}(this, function (exports) { 'use strict';
 	
 	
 function geoTile() {
@@ -26,21 +26,23 @@ function geoTile() {
 	var tk = 1;	// zoom transform scale k
 	var tx = 0; // zoom transform translate x
 	var ty = 0; // zoom transform translate y
-	
+		
 	// The Projection:
 	var p = d3.geoMercator()
 	  .scale(pk)
 	  .translate([px,py])
       .center(pc);
 	  
-	// Tile source:
+	// Tile wrapping:
+	var W = true;
+	
+	// Tile source & attribution
 	var source = function(d) {
 		return "http://" + "abc"[d.y % 3] + ".tile.openstreetmap.org/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
 	}
 	var a = "Tiles © OpenStreetMap contributors";
 	  
 	function geoTile(_) {
-	
 		return p(_);
 	}
 	
@@ -52,7 +54,11 @@ function geoTile() {
 		return arguments.length ? (h = _, geoTile) : h;
 	}
 	geoTile.size = function(_) {
-		return arguments.length > 1 ? (h = _[0], h = _[1], geoTile) : [w,h];
+		if(arguments.length) {
+			(_ instanceof d3.selection) ? (w = _.attr("width"), h = _.attr("height")) : (w = _[0], h = _[1]);
+			return geoTile;
+		}
+		else return [w,h]
 	}
 	geoTile.source = function(_) {
 		return arguments.length ? (source = _, geoTile) : source;
@@ -63,6 +69,10 @@ function geoTile() {
 	geoTile.attribution = function(_) {
 		return arguments.length ? (a = _, geoTile) : a;
 	}
+	geoTile.wrap = function(_) {
+		return arguments.length ? (W = _, geoTile) : W;
+	}
+	
 	
 	// Standard Projection methods:
 	geoTile.invert = function(_) {
@@ -82,6 +92,9 @@ function geoTile() {
 	}
 	geoTile.fitExtent = function(e,f) {
 		return arguments.length > 1 ? (p.fitExtent(e,f),px = p.translate()[0],py = p.translate()[1],pk = p.scale(), geoTile) : "n/a";
+	}
+	geoTile.fitMargin = function(m,f) {
+		return arguments.length > 1 ? (p.fitExtent([[m,m],[w-m,h-m]],f), px = p.translate()[0],py = p.translate()[1],pk = p.scale(), geoTile) : "n/a";
 	}
 		
 	// Zoom Methods:
@@ -109,7 +122,7 @@ function geoTile() {
 		var x0 = p([-180,lim])[0];
 
 		var set = [];
-		var cStart = Math.max(0,Math.floor((0 - x0) / s));
+		var cStart = Math.max(0, Math.floor((0 - x0) / s));
 		var cEnd = Math.max(0, Math.ceil((w - x0) / s));
 		var rStart = Math.max(0,Math.floor((0 - y0) / s));
 		var rEnd = Math.max(0, Math.ceil((h - y0) / s));
@@ -121,7 +134,7 @@ function geoTile() {
 		}
 		
 		set.translate = [x0 / s, y0 / s];
-        set.scale = s;
+		set.scale = s;
 
 		return set;
 	
