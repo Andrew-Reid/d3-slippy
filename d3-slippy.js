@@ -35,6 +35,8 @@ function geoTile() {
 	  
 	// Tile wrapping:
 	var W = true;
+	var z0 = 4;
+	var z1 = 13;
 	
 	// Tile source & attribution
 	var source = function(d) {
@@ -84,17 +86,18 @@ function geoTile() {
 	geoTile.scale = function(_) {
 		return arguments.length ? (pk = _, p.scale(pk), geoTile) : pk;
 	}	
-	geoTile.translate = function(_) {
-		return arguments.length ? (px = _[0], py = _[1], p.translate([px,py])) : [px,py]
-	}
+//	geoTile.translate = function(_) {
+//		return arguments.length ? (px = _[0], py = _[1], p.translate([px,py]), geoTile) : [px,py]
+//	}
 	geoTile.fit = function(_) {
-		return arguments.length ? (p.fitSize([w,h],_),px = p.translate()[0],py = p.translate()[1],pk = p.scale(), geoTile) : "n/a";
+		return arguments.length ? (p.fitSize([w,h],_),tx = p.translate()[0],ty = p.translate()[1],pk = p.scale(), geoTile) : "n/a";
 	}
 	geoTile.fitExtent = function(e,f) {
-		return arguments.length > 1 ? (p.fitExtent(e,f),px = p.translate()[0],py = p.translate()[1],pk = p.scale(), geoTile) : "n/a";
+		
+		return arguments.length > 1 ? (p.fitExtent(e,f),pk = p.scale(),tx = p.translate()[0],ty = p.translate()[1], geoTile) : "n/a";
 	}
 	geoTile.fitMargin = function(m,f) {
-		return arguments.length > 1 ? (p.fitExtent([[m,m],[w-m,h-m]],f), px = p.translate()[0],py = p.translate()[1],pk = p.scale(), geoTile) : "n/a";
+		return arguments.length > 1 ? (p.fitExtent([[m,m],[w-m,h-m]],f), tx = p.translate()[0],ty = p.translate()[1],pk = p.scale(), geoTile) : "n/a";
 	}
 		
 	// Zoom Methods:
@@ -102,14 +105,32 @@ function geoTile() {
 		return arguments.length ? (tk = _, p.scale(pk*tk), geoTile) : tk;
 	}
 	geoTile.zoomTranslate = function(_) {	
+		//return arguments.length ? (tx = _[0], ty = _[1], p.translate([tx, ty]), geoTile): [tx,ty] 
 		return arguments.length ? (tx = _[0], ty = _[1], p.translate([tx, ty]), geoTile): [tx,ty] 
+		
 	}
 	geoTile.zoomIdentity = function() {
-		return d3.zoomIdentity.translate(px,py).scale(tk).translate(0,0);
+		return d3.zoomIdentity.translate(tx,ty).scale(tk).translate(0,0);
 	}
 	geoTile.zoomTransform = function(t) {
+		console.log(tx,px);
 		tx = t.x, ty = t.y, tk = t.k; p.translate([tx,ty]); p.scale(pk*tk); return geoTile;
 	}
+	geoTile.zoomScaleExtent = function() {
+		var size = pk * tk * tau;
+		var z = Math.max(Math.log(size) / Math.LN2 - 8, 0);
+		var max = Math.pow(2,z1)/Math.pow(2,z);
+		var min = Math.pow(2,z0)/Math.pow(2,z);
+		console.log(min,max);
+		return [min,max]
+	}
+	geoTile.zoomTranslateExtent = function() {
+		var y0 = p([-180,lim])[1];
+		var x0 = p([-180,lim])[0];
+		var y1 = p([180,-lim])[1];
+		var x1 = p([180,-lim])[0];
+		return [[x0,y0],[x1,y1]]
+	}		
 
 	// Tile Methods:	
 	// Calculate Tiles:
