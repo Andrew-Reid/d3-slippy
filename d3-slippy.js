@@ -125,10 +125,10 @@ function geoTile() {
 		return [min,max]
 	}
 	geoTile.zoomTranslateExtent = function() {
+		var x0 = p([-180,lim])[0] - tx;
 		var y0 = p([-180,lim])[1];
-		var x0 = p([-180,lim])[0];
+		var x1 = p([180,-lim])[0] - tx;
 		var y1 = p([180,-lim])[1];
-		var x1 = p([180,-lim])[0];
 		return [[x0,y0],[x1,y1]]
 	}		
 
@@ -136,7 +136,7 @@ function geoTile() {
 	// Calculate Tiles:
 	geoTile.tiles = function() {
 		var size = pk * tk * tau;
-		var z = Math.max(Math.log(size) / Math.LN2 - 8, 0); // z, assuming image size of 256.  
+		var z = Math.max(Math.log(size) / Math.LN2 - 8, 0); // z, assuming image size of 256 (2^8).  
 		var s = Math.pow(2, z - Math.round(z) + 8);
 		
 		var y0 = p([-180,lim])[1];
