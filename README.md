@@ -104,6 +104,37 @@ Similar to `D3-geoprojection.fitSize()`, but as size is specified either by defa
 
 Similar to `slippy.fit()` but takes an extra parameter that specifies a margin and fits the geojson feature to the slippy map bounds given that margin.
 
+## Zoom Methods
+
+These methods are intended to interact with D3-zoom to implement dragging and zooming behavior. They do not modify the projection (except for translate values). These methods deal with translate and (zoom) scale, where zoom scale is multiplied against the projection scale.
+
+### slippy.zoomScale(*scale*)
+
+If an argument is provided, sets the zoom scale. A scale of 1 represents no alteration from the map scale, while a scale of 2 will increase map size four fold (twice as wide, twice as high). If no parameter is provided, returns the current zoom scale.
+
+### slippy.zoomTranslate(*translate*)
+
+If an argument is provided, sets the current zoom translate (*[x,y]*). If no argument is provided, returns the current zoom translate value.
+
+### slippy.zoomTransform(*transform*)
+
+Designed to implement both scale and translate at once using `d3.event.transform`:
+
+     // Update on zoom:
+     slippy.zoomTransform(d3.event.transform)
+     
+Allows updating of zoom transform easily during zoom events. Should be used over `slippy.zoomTranslate()` and `slippy.zoomScale()` in most use cases.
+
+### slippy.zoomIdentity()
+
+Returns the current zoom identity. Intended to be used when interfacing with `d3.zoom()`, such as when setting the zoom on a selection:
+
+    svg
+    .call(zoom)
+    .call(zoom.transform, slippy.zoomIdentity());
+
+
+
 
 
 
