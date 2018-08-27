@@ -1,4 +1,4 @@
-//
+// Andrew Reid 2018
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -7,7 +7,6 @@
 	
 	
 function geoTile() {
-	
 	// Basic Constants
 	const tau = Math.PI * 2;
 	const lim = 85.05113;
@@ -18,25 +17,24 @@ function geoTile() {
 	
 	// Projection Values:
 	var pk = w/tau; // projection scale k
-	var px = w/2;   // projection translate x
-	var py = h/2;   // projection translate y
 	var pc = [0,0]  // projection geographic center
-	
+	var pr = 0      // central longitude for rotation.
+
 	// Zoom Transform Values:
 	var tk = 1;	// zoom transform scale k
-	var tx = 0; // zoom transform translate x
-	var ty = 0; // zoom transform translate y
+	var tx = w/2; // zoom transform translate x
+	var ty = h/2; // zoom transform translate y
 		
 	// The Projection:
 	var p = d3.geoMercator()
 	  .scale(pk)
-	  .translate([px,py])
       .center(pc);
-	  
-	// Tile wrapping:
-	var W = true;
+
+	// Tile wrapping and zoom limits:
 	var z0 = 4;
 	var z1 = 13;
+	var extent = {left:-179.99999,top:lim,right:179.9999,bottom:-lim};
+	var wrap = false;
 	
 	// Tile source & attribution
 	var source = function(d) {
@@ -72,11 +70,11 @@ function geoTile() {
 		return arguments.length ? (a = _, geoTile) : a;
 	}
 	geoTile.wrap = function(_) {
-		return arguments.length ? (W = _, geoTile) : W;
+		return arguments.length ? (wrap = _, geoTile) : wrap;
 	}
+
 	
-	
-	// Standard Projection methods:
+	// Projection methods:
 	geoTile.invert = function(_) {
 		return p.invert(_);
 	}
@@ -86,51 +84,77 @@ function geoTile() {
 	geoTile.scale = function(_) {
 		return arguments.length ? (pk = _, p.scale(pk), geoTile) : pk;
 	}	
-//	geoTile.translate = function(_) {
-//		return arguments.length ? (px = _[0], py = _[1], p.translate([px,py]), geoTile) : [px,py]
-//	}
+	geoTile.rotate = function(_) {
+		return arguments.length ? (pr = _, p.rotate([pr,0]), geoTile) : pr;
+	}
 	geoTile.fit = function(_) {
 		return arguments.length ? (p.fitSize([w,h],_),tx = p.translate()[0],ty = p.translate()[1],pk = p.scale(), geoTile) : "n/a";
 	}
 	geoTile.fitExtent = function(e,f) {
-		
 		return arguments.length > 1 ? (p.fitExtent(e,f),pk = p.scale(),tx = p.translate()[0],ty = p.translate()[1], geoTile) : "n/a";
 	}
 	geoTile.fitMargin = function(m,f) {
 		return arguments.length > 1 ? (p.fitExtent([[m,m],[w-m,h-m]],f), tx = p.translate()[0],ty = p.translate()[1],pk = p.scale(), geoTile) : "n/a";
 	}
 		
+		
 	// Zoom Methods:
 	geoTile.zoomScale = function(_) {
 		return arguments.length ? (tk = _, p.scale(pk*tk), geoTile) : tk;
 	}
 	geoTile.zoomTranslate = function(_) {	
-		//return arguments.length ? (tx = _[0], ty = _[1], p.translate([tx, ty]), geoTile): [tx,ty] 
 		return arguments.length ? (tx = _[0], ty = _[1], p.translate([tx, ty]), geoTile): [tx,ty] 
-		
 	}
 	geoTile.zoomIdentity = function() {
 		return d3.zoomIdentity.translate(tx,ty).scale(tk).translate(0,0);
 	}
 	geoTile.zoomTransform = function(t) {
-		console.log(tx,px);
 		tx = t.x, ty = t.y, tk = t.k; p.translate([tx,ty]); p.scale(pk*tk); return geoTile;
 	}
-	geoTile.zoomScaleExtent = function() {
-		var size = pk * tk * tau;
-		var z = Math.max(Math.log(size) / Math.LN2 - 8, 0);
-		var max = Math.pow(2,z1)/Math.pow(2,z);
-		var min = Math.pow(2,z0)/Math.pow(2,z);
-		console.log(min,max);
-		return [min,max]
+
+	// Zoom extent methods:
+	geoTile.zoomScaleExtent = function(_) {
+		if (arguments.length) {
+			z0 = _[0];
+			z1 = _[1];		
+			return geoTile;
+		}
+		else {
+			var size = pk * tk * tau;
+			var z = Math.max(Math.log(size) / Math.LN2 - 8, 0);
+			var max = Math.pow(2,z1)/Math.pow(2,z);
+			var min = Math.pow(2,z0)/Math.pow(2,z);
+			return [min,max];
+		}
 	}
-	geoTile.zoomTranslateExtent = function() {
-		var x0 = p([-180,lim])[0] - tx;
-		var y0 = p([-180,lim])[1];
-		var x1 = p([180,-lim])[0] - tx;
-		var y1 = p([180,-lim])[1];
-		return [[x0,y0],[x1,y1]]
-	}		
+	geoTile.zoomTranslateExtent = function(_) {
+		if (arguments.length) {
+			extent.left = _[0][0];
+			extent.top = _[0][1];
+			extent.right = _[1][0];
+			extent.bottom = _[1][1];			
+			return geoTile;
+		}
+		else {
+			var x0 = p([extent.left-pr,extent.top])[0] - tx;
+			var y0 = p([extent.left-pr,extent.top])[1] - ty;
+			var x1 = p([extent.right-pr,extent.bottom])[0] - tx;
+			var y1 = p([extent.right-pr,extent.bottom])[1] - ty;
+			return [[x0,y0],[x1,y1]];
+		}
+	}
+	geoTile.zoomTranslateConstrain = function() {
+		extent.left = p.invert([0,0])[0];
+		extent.top = p.invert([0,0])[1];
+		extent.right = p.invert([w,h])[0];
+		extent.bottom = p.invert([w,h])[1];
+		
+		var x0 = p([extent.left-pr,extent.top])[0] - tx;
+		var y0 = p([extent.left-pr,extent.top])[1] - ty;
+		var x1 = p([extent.right-pr,extent.bottom])[0] - tx;
+		var y1 = p([extent.right-pr,extent.bottom])[1] - ty;
+		return [[x0,y0],[x1,y1]];				
+	}
 
 	// Tile Methods:	
 	// Calculate Tiles:
@@ -138,31 +162,34 @@ function geoTile() {
 		var size = pk * tk * tau;
 		var z = Math.max(Math.log(size) / Math.LN2 - 8, 0); // z, assuming image size of 256 (2^8).  
 		var s = Math.pow(2, z - Math.round(z) + 8);
-		
+				
 		var y0 = p([-180,lim])[1];
 		var x0 = p([-180,lim])[0];
 
 		var set = [];
-		var cStart = Math.max(0, Math.floor((0 - x0) / s));
+		var cStart = wrap ? Math.floor((0 - x0) / s) : Math.max(0, Math.floor((0 - x0) / s));
 		var cEnd = Math.max(0, Math.ceil((w - x0) / s));
 		var rStart = Math.max(0,Math.floor((0 - y0) / s));
 		var rEnd = Math.max(0, Math.ceil((h - y0) / s));
-	
+		
 		for(var i = cStart; i < cEnd; i++) {
 			for(var j = rStart; j < rEnd; j++) {
-				set.push({x:i,y:j,z:Math.round(z),id:i+"-"+j+"-"+z}) 
+				var x = i;
+				if (wrap) {
+					var k = Math.pow(2,Math.round(z));
+					x = (i+k)%k;
+				}
+				set.push({x:x,y:j,z:Math.round(z),tx:i,ty:j, id:i+"-"+j+"-"+z}) 
 			}
 		}
-		
+
 		set.translate = [x0 / s, y0 / s];
 		set.scale = s;
 
 		return set;
-	
 	}
 	// Assign Tiles to a Selection:
 	geoTile.tile = function(g) {
-		
 		var set = geoTile.tiles();
 		var images = g.attr("transform", stringify(set.scale, set.translate))
 			.selectAll("image")
@@ -171,8 +198,8 @@ function geoTile() {
 		images.exit().remove();
 		images.enter().append("image").merge(images)
 			.attr("xlink:href", source )
-			.attr("x", function(d) { return d.x * 256; })
-			.attr("y", function(d) { return d.y * 256; })
+			.attr("x", function(d) { return d.tx * 256; })
+			.attr("y", function(d) { return d.ty * 256; })
 			.attr("width", 256)
 			.attr("height", 256);	
 	}
@@ -228,18 +255,6 @@ function geoTile() {
 				return "https://cartodb-basemaps-b.global.ssl.fastly.net/rastertiles/voyager/"+d.z+"/"+d.x+"/"+d.y+".png";
 			}
 		}
-		/* else if(_ == "CartoDB_VoyagerNoLabels") {
-			a = "© OpenStreetMap © CartoDB";
-			source = function(d) {
-				return "https://cartodb-basemaps-b.global.ssl.fastly.net/rastertiles/voyager-nolabels/"+d.z+"/"+d.x+"/"+d.y+".png";
-			}
-		} 
-		else if(_ == "CartoDB_VoyagerOnlyLabels") {
-			a = "© OpenStreetMap © CartoDB";
-			source = function(d) {
-				return "https://cartodb-basemaps-b.global.ssl.fastly.net/rastertiles/voyager-only_labels/"+d.z+"/"+d.x+"/"+d.y+".png";
-			}
-		} */
 		
 		// ESRI
 		else if(_ == "ESRI_WorldTerrain") {
@@ -377,8 +392,7 @@ function geoTile() {
 	return geoTile;
 
 }
-
-  exports.geoTile = geoTile;
+  exports.geoSlippy = geoTile;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
