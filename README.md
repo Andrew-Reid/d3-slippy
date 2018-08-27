@@ -169,7 +169,7 @@ id: the id of the tile coordinate is equal to: "i" + x + "-" + y + "-" + z
 
 ### slippy.tile(*g*)
 
-Enters, updates, and exits tiles from the given selection. Intended to be used on each zoom or map change event reducing boilerplate and tile code.
+Enters, updates, and exits tiles from the given selection (idealy a selected `g`). Intended to be used on each zoom or map change event reducing boilerplate and tile code.
 
 
 
