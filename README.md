@@ -76,7 +76,33 @@ These tile sets require an attribution, which can be accessed with `slippy.attri
 
 And, of course, it is possible that the tile sets available may change. Tile sets offered are available as of August 2018.
 
+## Projection Methods
 
+These methods alter the projection behind `d3-slippy`, *the distinction between "projection" and "zoom" methods is one that I am not particularily satisfied with and may be subject to change.*
+
+### slippy.invert(*[x,y]*)
+
+Same as a D3-geoprojection, takes an SVG coordinate in pixels and returns a geographic coordinate ([longitude,latitude]).
+
+### slippy.center(*[longitude,latitude]*)
+
+Same as a D3-geoprojection, takes a geographic coordinate ([longitude,latitude]) and places the map center at this location. *Map size must be correct for the center to be place properly.*
+
+### slippy.scale(*scale*)
+
+Largely the same as a D3 geoMercator projection. If an argument is provided, specifies a scale. The default is 960 / (π * 2), where 960 is the default width of the slippy map. If no scale is provided returns the map scale. When zooming this scale does not change - instead the zoom scale is applied on top of the map scale. 
+
+### slippy.rotate(*rotate*)
+
+Unlike a D3-geoprojection, this method does not take an array. It can be provided a single number representing the x rotation in degrees of the map. Like D3-geoprojection, rotation moves the world under you and thus is the negative of the value that would be used to center the map using `slippy.center()`.
+
+### slippy.fit(*feature*)
+
+Similar to `D3-geoprojection.fitSize()`, but as size is specified either by default or by using `slippy.size()`/`slippy.height()`/`slippy.width()`, the size is already known. Takes a geojson feature and modifies the projection so that it fits within the slippy map bounds. *Does not take an array of geojson features.*
+
+### slippy.fitMargin(*margin,feature*)
+
+Similar to `slippy.fit()` but takes an extra parameter that specifies a margin and fits the geojson feature to the slippy map bounds given that margin.
 
 
 
