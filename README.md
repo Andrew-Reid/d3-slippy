@@ -134,6 +134,48 @@ Returns the current zoom identity. Intended to be used when interfacing with `d3
     .call(zoom.transform, slippy.zoomIdentity());
 
 
+### slippy.zoomScaleExtent(*[min,max]*)
+
+Takes an array specifying a min and max zoom level for the map. *Unlike other methods, this is expressed in tile units.* Tile scales start at 0 (entire world on one tile). For a given integer scale value (n) the number of tiles needed to map the world is  
+4^n. This is method is in tile units as tile sets have minimum and maximum scale values in tile units.
+
+### slippy.zoomTranslateExtent(*extent*)
+
+If an argument is provided sets the intended translate extent of the map. Extent can be specified by an array: `[[x0,y0],[x1,y1]]` where `[x0,y0]` is the top right (north west) corner of the desired translate extent and `[x1,y1]` is the bottom right (south east) corner of the desired translate extent. Coordinate units are degrees longitude/latitude.
+
+If no argument is provided returns the current extent. Without passing this value to `d3.zoom()` no panning extent is applied: 
+*This is a courtesy method meant to interface with `d3.zoom().translateExtent()` by taking geographic extents and converting them into a translate extent in pixels given slippy scale values, rotation, center etc.*
+
+The default value of the zoomTranslateExtent is an extent that is +/- ~85 degrees on the y axis and +/- 180 degrees from the rotational center of the slippy map (to better accomodate the anti-meridian).
+
+### slippy.zoomTranslateConstrain()
+
+Returns a zoom translate extent that limits panning to the current geographic extent of the slippy map. Again, meant to be interfaced with `d3.zoom()` like `slippy.zoomTranslateExtent()`.
+
+## Tile Methods
+
+### slippy.tiles()
+
+Returns an array containing objects representing each tile on the map. Each item contains six properties:
+
+```
+x: the x value of the tile coordinate (tile units)
+y: the y value of the tile coordinate (tile units)
+z: the z value of the tile coordinate (tile units)
+tx: the x value of the tile coordinate (pixel units)
+ty: the y value of the tile coordinate (pixel units)
+id: the id of the tile coordinate is equal to: "i" + x + "-" + y + "-" + z
+```
+
+### slippy.tile(*g*)
+
+Enters, updates, and exits tiles from the given selection. Intended to be used on each zoom or map change event reducing boilerplate and tile code.
+
+
+
+
+
+
 
 
 
