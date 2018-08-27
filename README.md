@@ -37,7 +37,7 @@ If no argument is provided, returns the current source.
       
 ### slippy.attribution(*attribution*)
 
-Can be provided an attribution line, more commonly 
+Can be provided an attribution line, more commonly used to return the attribution string when a tile set is provided using the `slippy.tileSet()` method.
 
 
 
