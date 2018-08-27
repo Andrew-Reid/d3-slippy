@@ -29,9 +29,11 @@ Takes a true / false boolean value to determine if the tiles should be wrapped. 
 
 Takes a geographical tile source in the form of a function, where the function returns a tile's address given x,y and z coordinates. For example:
 
-			function(d) {
-				return "https://cartodb-basemaps-b.global.ssl.fastly.net/light_all/"+d.z+"/"+d.x+"/"+d.y+".png";
-			}
+```
+function(d) {
+   return "https://cartodb-basemaps-b.global.ssl.fastly.net/light_all/"+d.z+"/"+d.x+"/"+d.y+".png";
+}
+```
       
 If no argument is provided, returns the current source.
       
