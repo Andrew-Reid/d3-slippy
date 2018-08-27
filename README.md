@@ -39,6 +39,59 @@ If no argument is provided, returns the current source.
 
 Can be provided an attribution line, more commonly used to return the attribution string when a tile set is provided using the `slippy.tileSet()` method.
 
+### slippy.tileSet(*tileSet*)
+
+The module offers some built in tile sources and attributions out of the box. This method takes one of the names of those tile sources and sets the appropriate tile source and attribution. Valid values are:
+
+* `CartoDB_Positron`
+* `CartoDB_PositronNoLabels`
+* `CartoDB_PositronOnlyLabels`
+* `CartoDB_DarkMatter`
+* `CartoDB_DarkMatterNoLabels`
+* `CartoDB_DarkMatterOnlyLabels`
+* `CartoDB_Voyager`
+* `ESRI_WorldTerrain`
+* `ESRI_WorldShadedRelief`
+* `ESRI_WorldPhysical`
+* `ESRI_WorldStreetMap`
+* `ESRI_WorldTopoMap`
+* `ESRI_WorldImagery`
+* `ESRI_OceanBasemap`
+* `ESRI_NGWorld` (National Geographic)
+* `ESRI_Gray`
+* `OSM_Topo` (Open Streetmap)
+* `OSM`
+* `Stamen_Toner`
+* `Stamen_TonerBackground`
+* `Stamen_TonerLines`
+* `Stamen_TonerLite`
+* `Stamen_Terrain`
+* `Stamen_TerrainBackground`
+* `Stamen_TerrainLines`
+* `Stamen_Watercolor`
+
+These tile sets require an attribution, which can be accessed with `slippy.attribution()` after the tile set is specified.
+
+And, of course, it is possible that the tile sets available may change. Tile sets offered are available as of August 2018.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
