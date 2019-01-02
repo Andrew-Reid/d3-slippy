@@ -111,6 +111,20 @@ function geoTile() {
 	geoTile.zoomTransform = function(t) {
 		tx = t.x, ty = t.y, tk = t.k; p.translate([tx,ty]); p.scale(pk*tk); return geoTile;
 	}
+	
+	
+	// Convert between zoom k and tile depth.
+	geoTile.tileDepth = function(z) {
+		if(arguments.length) {
+			tk = Math.pow(Math.E, ((z + 8) * Math.LN2)) / pk / tau;
+		}
+		else {
+			
+			var size = pk * tk * tau;
+			var z = Math.max(Math.log(size) / Math.LN2 - 8, 0);
+			return Math.round(z);
+		}
+	}	
 
 	// Zoom extent methods:
 	geoTile.zoomScaleExtent = function(_) {
