@@ -228,8 +228,6 @@ function geoTile() {
 			var tile = new Image();
 			tile.src = source(d); // can also be a remote URL e.g. http://
 			tile.onload = function() {
-				var x = d.tx * 256 * k + r(set.translate[0]*k);
-
 				context.drawImage(tile,d.tx*256*k+ox,d.ty*256*k+oy,256*k,256*k);
 			};
 		})
