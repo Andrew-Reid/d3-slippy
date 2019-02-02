@@ -173,6 +173,10 @@ id: the id of the tile coordinate is equal to: "i" + x + "-" + y + "-" + z
 
 Enters, updates, and exits tiles from the given selection (idealy a selected `g`). Intended to be used on each zoom or map change event reducing boilerplate and tile code.
 
+### slippy.canvas(*context*)
+
+Draws tiles on a canvas given that canvas's context. Temporary home for this method.
+
 
 
 
