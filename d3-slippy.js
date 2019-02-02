@@ -218,6 +218,23 @@ function geoTile() {
 			.attr("height", 256);	
 	}
 	
+	// Draw on a canvas:
+	geoTile.canvas = function(context) {
+		var set = geoTile.tiles();
+		var k = set.scale / 256, r = set.scale % 1 ? Number : Math.round;
+		var ox = r(set.translate[0] * set.scale);
+		var oy = r(set.translate[1] * set.scale);
+		set.forEach(function(d) {
+			var tile = new Image();
+			tile.src = source(d); // can also be a remote URL e.g. http://
+			tile.onload = function() {
+				var x = d.tx * 256 * k + r(set.translate[0]*k);
+
+				context.drawImage(tile,d.tx*256*k+ox,d.ty*256*k+oy,256*k,256*k);
+			};
+		})
+	}	
+	
 	// Helper stringify	
 	function stringify(scale, translate) {
 		var k = scale / 256, r = scale % 1 ? Number : Math.round;
