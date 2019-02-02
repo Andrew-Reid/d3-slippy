@@ -226,13 +226,17 @@ function geoTile() {
 	
 	// To break out in the future, at least use switch ?:
 	geoTile.tileSet = function(_) {
+		if(typeof _ == "function") {
+			source = _;
+		}
+		
 		// CartoDB:
-		if(_ == "CartoDB_Positron") {
+		else if(_ == "CartoDB_Positron") {
 			a = "© OpenStreetMap © CartoDB";
 			source = function(d) {
 				return "https://cartodb-basemaps-b.global.ssl.fastly.net/light_all/"+d.z+"/"+d.x+"/"+d.y+".png";
 			}
-		}		
+		}			
 		else if(_ == "CartoDB_PositronNoLabels") {
 			a = "© OpenStreetMap © CartoDB";
 			source = function(d) {
