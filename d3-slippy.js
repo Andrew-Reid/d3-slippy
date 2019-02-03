@@ -36,16 +36,22 @@ function geoTile() {
 	var extent = {left:-179.99999,top:lim,right:179.9999,bottom:-lim};
 	var wrap = false;
 	
+	// Tile ordering:
+	var xyz = true;
+	
 	// Tile source & attribution
+	var xyz = function(_) {
+		return arguments.length ? (xzy = _, geoTile): xzy;
+	}
 	var source = function(d) {
 		return "http://" + "abc"[d.y % 3] + ".tile.openstreetmap.org/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
 	}
 	var a = "Tiles © OpenStreetMap contributors";
-	  
+	
 	function geoTile(_) {
 		return p(_);
 	}
-	
+
 	// General Methods
 	geoTile.width = function(_) {
 		return arguments.length ? (w = _, geoTile) : w;
@@ -196,6 +202,12 @@ function geoTile() {
 				set.push({x:x,y:j,z:Math.round(z),tx:i,ty:j, id:i+"-"+j+"-"+z}) 
 			}
 		}
+		
+		if(!xyz) {
+			set.forEach(function(d) {
+				d.y = (Math.pow(2, d.z) - d.y - 1)
+			})
+		}		
 
 		set.translate = [x0 / s, y0 / s];
 		set.scale = s;
