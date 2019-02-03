@@ -43,6 +43,10 @@ If no argument is provided, returns the current source.
 
 Can be provided an attribution line, more commonly used to return the attribution string when a tile set is provided using the `slippy.tileSet()` method.
 
+### slippy.xyz(*true/false*)
+
+If provided false, the tiles will be assumed to be of a TMS layout scheme (such as those tiles produced by TileMill). If true (the default), the tiling will be xyz (most tile sources). By default this is set to true.
+
 ### slippy.tileSet(*tileSet*)
 
 The module offers some built in tile sources and attributions out of the box. This method takes one of the names of those tile sources and sets the appropriate tile source and attribution. Valid values are:
