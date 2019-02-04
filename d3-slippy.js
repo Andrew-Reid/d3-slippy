@@ -39,18 +39,20 @@ function geoTile() {
 	// Tile ordering:
 	var xyz = true;
 	
+	function geoTile(_) {
+		return p(_);
+	}
+	
 	// Tile source & attribution
 	var xyz = function(_) {
-		return arguments.length ? (xzy = _, geoTile): xzy;
+		return arguments.length ? (xyz = _, geoTile): xyz;
 	}
 	var source = function(d) {
 		return "http://" + "abc"[d.y % 3] + ".tile.openstreetmap.org/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
 	}
 	var a = "Tiles © OpenStreetMap contributors";
 	
-	function geoTile(_) {
-		return p(_);
-	}
+
 
 	// General Methods
 	geoTile.width = function(_) {
