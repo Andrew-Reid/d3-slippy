@@ -49,7 +49,9 @@ If provided false, the tiles will be assumed to be of a TMS layout scheme (such 
 
 ### slippy.tileSet(*tileSet*)
 
-The module offers some built in tile sources and attributions out of the box. This method takes one of the names of those tile sources and sets the appropriate tile source and attribution. Valid values are:
+If provided, sets the tile set to be used. Some tile sets modify the projection (Arctic polar tiles for example) and slippy properties.
+
+Tile sets can be from one of the built in tile sources and attributions. This method takes one of the names of those tile sources and sets the appropriate tile source and attribution. Valid values are:
 
 * `CartoDB_Positron`
 * `CartoDB_PositronNoLabels`
@@ -87,6 +89,18 @@ The module offers some built in tile sources and attributions out of the box. Th
 These tile sets require an attribution, which can be accessed with `slippy.attribution()` after the tile set is specified. Check with tile providers for the specifics of attribution.
 
 And, of course, it is possible that the tile sets available may change. Tile sets offered are available as of February 2019.
+
+It is possible to provide a custom tile set by providing a function to `slippy.tileSet()`:
+
+```
+slippy.tileSet(function(d) {
+	return "address/"+d.z+"/"+d.x+"/"+d.y+".png";
+})
+```
+
+Where d is an object containing x,y,z properties representing a specific tile.
+
+Temporary: If no tileset is provided, the method will return a list of built in tileSets. This is not a consistent behavior when compared with other methods (where, generally, if no value is set, the current value is returned).
 
 ## Projection Methods
 
