@@ -90,7 +90,7 @@ These tile sets require an attribution, which can be accessed with `slippy.attri
 
 And, of course, it is possible that the tile sets available may change. Tile sets offered are available as of February 2019.
 
-It is possible to provide a custom tile set by providing a function to `slippy.tileSet()`:
+Temporary: As with `slippy.source()`, It is possible to provide a custom tile set by providing a function to `slippy.tileSet()`:
 
 ```
 slippy.tileSet(function(d) {
@@ -98,7 +98,7 @@ slippy.tileSet(function(d) {
 })
 ```
 
-Where d is an object containing x,y,z properties representing a specific tile.
+Where d is an object containing x,y,z properties representing a specific tile. A common tileset object format is intended to be created to replace this behavior.
 
 Temporary: If no tileset is provided, the method will return a list of built in tileSets. This is not a consistent behavior when compared with other methods (where, generally, if no value is set, the current value is returned).
 
