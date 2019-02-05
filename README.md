@@ -136,7 +136,7 @@ Similar to `slippy.fit()` but takes an extra parameter that specifies a margin a
 
 ### slippy.offset(*[offsetX,offsetY]*)
 
-If an offset is provided, sets the offset between the projected point marking the north-west limit of the map and the top left extent of the SVG/Canvas (*This is not qutie accurate - needs refinement*). These two are not always the same. If no offset is provided, returns the current offset.
+If an offset is provided, sets the offset between the projected point marking the north-west limit of the map and the top left extent of the SVG/Canvas (*This is not quite accurate - needs refinement*). These two are not always the same. If no offset is provided, returns the current offset.
 
 Slippy projection translates are generally set to 0 to start, the zoom manages the translate. The offset refers to the distance from the upper left hand limit of the map (for a mercator this is `[-180,~85]`) in geographic coordinates (the north west most point) to the upper left hand limit of the SVG/Canvas. For most web mercator type maps this is zero - the upper left corner of the SVG/Canvas aligns with the north most and west most geographic point the map shows. For an polar projection, the north most/west most point the map can show is the north pole - in the center of the map. So the offset will be `[width/2, height/2]`.
 
