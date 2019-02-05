@@ -77,14 +77,24 @@ The module offers some built in tile sources and attributions out of the box. Th
 * `Stamen_TerrainBackground`
 * `Stamen_TerrainLines`
 * `Stamen_Watercolor`
+* `ArcticConnect_180`  (Polar projection with central meridian 180 degrees)
+* `ArcticConnect_150w` (Polar projection with central meridian 150 degrees west)
+* `ArcticConnect_100w` (Polar projection with central meridian 100 degrees west)
+* `ArcticConnect_40w`  (Polar projection with central meridian 40 degrees west)
+* `ArcticConnect_10e`  (Polar projection with central meridian 10 degrees east)
+* `ArcticConnect_90e`  (Polar projection with central meridian 90 degrees east)
 
-These tile sets require an attribution, which can be accessed with `slippy.attribution()` after the tile set is specified.
+These tile sets require an attribution, which can be accessed with `slippy.attribution()` after the tile set is specified. Check with tile providers for the specifics of attribution.
 
-And, of course, it is possible that the tile sets available may change. Tile sets offered are available as of August 2018.
+And, of course, it is possible that the tile sets available may change. Tile sets offered are available as of February 2019.
 
 ## Projection Methods
 
 These methods alter the projection behind `d3-slippy`, *the distinction between "projection" and "zoom" methods is one that I am not particularily satisfied with and may be subject to change.*
+
+### slippy.projection(*projection*)
+
+Takes a d3 projection - intended to be used to match a projection to a tile set.
 
 ### slippy.invert(*[x,y]*)
 
@@ -109,6 +119,18 @@ Similar to `D3-geoprojection.fitSize()`, but as size is specified either by defa
 ### slippy.fitMargin(*margin,feature*)
 
 Similar to `slippy.fit()` but takes an extra parameter that specifies a margin and fits the geojson feature to the slippy map bounds given that margin.
+
+### slippy.offset(*[offsetX,offsetY]*)
+
+If an offset is provided, sets the offset between the projected point marking the north-west limit of the map and the top left extent of the SVG/Canvas. These two are not always the same. If no offset is provided, returns the current offset.
+
+Slippy projection translates are generally set to 0 to start, the zoom manages the translate. The offset refers to the distance from the upper left hand limit of the map (for a mercator this is `[-180,~85]`) in geographic coordinates (the north west most point) to the upper left hand limit of the SVG/Canvas. For most web mercator type maps this is zero - the upper left corner of the SVG/Canvas aligns with the north most and west most geographic point the map shows. For an polar projection, the north most/west most point the map can show is the north pole - in the center of the map. So the offset will be `[width/2, height/2]`.
+
+The default is `[0,0]`.
+
+### slippy.limit(*limit*)
+
+If provided, sets the maximum latitude shown on the map. If not provided, returns the current limit. The maximum latitude that can be shown by the map - used for aligning tiles with projection. The default is `85.051133`. This is required for typical web tiles because the limit confines the projected geographic extent to a square - allowing for easy tiling.
 
 ## Zoom Methods
 
