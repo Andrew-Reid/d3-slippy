@@ -1,4 +1,4 @@
-// Andrew Reid 2019
+// Andrew Reid 2018
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -273,22 +273,13 @@ function geoTile() {
 		}
 		// arctic 
 		var a0 = function(lon) {
-			ox = w/2;
-			oy = h/2;
 			lim = 90;
 			p = d3.geoAzimuthalEqualArea().rotate([lon,-90])
+			ox = w/2 + (960-w)/2;
+			oy = h/2 + (960-h)/2;
 			xyz = true;
 		}
 		
-		// antarctic
-		var a1 = function(lon) {
-			ox = w/2;
-			oy = h/2;
-			lim = -50;
-			p = d3.geoAzimuthalEqualArea().rotate([lon,90])
-			xyz = true;
-		}		
-	
 		var sets = {
 			// CARTO DB //***********************************************************************
 			"CartoDB_Positron" : function() {
