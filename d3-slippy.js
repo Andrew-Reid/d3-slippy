@@ -267,7 +267,7 @@ function geoTile() {
 		var m = function() {
 			ox = 0;
 			oy = 0;
-			p = d3.geoMercator().scale(pk).translate([0,0]);
+			p = d3.geoMercator().scale(pk).translate([w/2,h/2]);
 			lim = 85.05113;
 			xyz = true;
 		}
