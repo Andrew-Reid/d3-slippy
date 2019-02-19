@@ -49,61 +49,121 @@ If provided false, the tiles will be assumed to be of a TMS layout scheme (such 
 
 ### slippy.tileSet(*tileSet*)
 
-If provided, sets the tile set to be used. Some tile sets modify the projection (Arctic polar tiles for example) and slippy properties.
+Takes an object representing a tileset. The tile object can include properties for:
 
-Tile sets can be from one of the built in tile sources and attributions. This method takes one of the names of those tile sources and sets the appropriate tile source and attribution. Valid values are:
+* `attribution` : The appropriate attribution string for the tile set.
+* `source`: A function to access the actual tiles, eg:
+```
+function(d) {
+   return "https://cartodb-basemaps-b.global.ssl.fastly.net/light_all/"+d.z+"/"+d.x+"/"+d.y+".png";
+}
+```
+* `projection` : The appropriate projection for the tile set (in the form of a d3 projection)
+* `tileSize` : The width in pixels of tiles in the source, default is 256 (for 256x256 tiles)
+* `minDepth` : The minimum tile depth for which tiles exist, default is 1
+* `maxDepth` : The maximum tile depth for which tiles exist, default is 13
+* `wrap` : Boolean for if tiles should be wrapped, default is false
+* `xyz` : Boolean for if tiles are structured in XYZ or TMS schemes, default is true
+* `limit` : The most extreme latitude, in degrees, represented on the map, defaults to 85.05113
 
-* `CartoDB_Positron`
+All of these are technically optional - however, source would typically be provided, as the default is OSM. *Setting a tileset may alter slippy and/or projection properties from intended values if they were set manually prior to assigning a tileset, for example assigning a tileset may change wrap settings that were previously specified.*
+
+As part of d3-slippy, There are tileset objects in `d3.tileSet`, these are as follows:
+
+* `d3.tileSet.CartoDB_Positron`
 
 <img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/CartoDB_Positron.png" width=400 height=200></img>
 
-* `CartoDB_PositronNoLabels`
-* `CartoDB_PositronOnlyLabels`
-* `CartoDB_DarkMatter`
+* `d3.tileSet.CartoDB_PositronNoLabels`
+* `d3.tileSet.CartoDB_PositronOnlyLabels`
+* `d3.tileSet.CartoDB_DarkMatter`
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/CartoDB_DarkMatter.png" width=400 height=200></img>
+
 * `CartoDB_DarkMatterNoLabels`
 * `CartoDB_DarkMatterOnlyLabels`
 * `CartoDB_Voyager`
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/CartoDB_Voyager.png" width=400 height=200></img>
+
 * `ESRI_WorldTerrain`
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/ESRI_WorldTerrain.png" width=400 height=200></img>
+
 * `ESRI_WorldShadedRelief`
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/ESRI_WorldShadedRelief.png" width=400 height=200></img>
+
 * `ESRI_WorldPhysical`
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/ESRI_WorldPhysical.png" width=400 height=200></img>
+
 * `ESRI_WorldStreetMap`
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/ESRI_WorldStreetMap.png" width=400 height=200></img>
+
 * `ESRI_WorldTopoMap`
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/ESRI_WorldTopoMap.png" width=400 height=200></img>
+
 * `ESRI_WorldImagery`
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/ESRI_WorldImagery.png" width=400 height=200></img>
+
 * `ESRI_OceanBasemap`
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/ESRI_OceanBasemap.png" width=400 height=200></img>
+
 * `ESRI_NGWorld` (National Geographic)
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/ESRI_NGWorld.png" width=400 height=200></img>
+
 * `ESRI_Gray`
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/ESRI_Gray.png" width=400 height=200></img>
+
 * `OSM_Topo` (Open Streetmap)
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/OSM_Topo.png" width=400 height=200></img>
+
 * `OSM`
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/OSM.png" width=400 height=200></img>
+
 * `Stamen_Toner`
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/Stamen_Toner.png" width=400 height=200></img>
+
 * `Stamen_TonerBackground`
+
+
+
 * `Stamen_TonerLines`
+
+
+
 * `Stamen_TonerLite`
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/Stamen_TonerLite.png" width=400 height=200></img>
+
 * `Stamen_Terrain`
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/Stamen_Terrain.png" width=400 height=200></img>
+
 * `Stamen_TerrainBackground`
+
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/Stamen_TerrainBackground.png" width=400 height=200></img>
+
 * `Stamen_TerrainLines`
 * `Stamen_Watercolor`
-* `ArcticConnect_180`  (Polar projection with central meridian 180 degrees)
-* `ArcticConnect_150w` (Polar projection with central meridian 150 degrees west)
-* `ArcticConnect_100w` (Polar projection with central meridian 100 degrees west)
-* `ArcticConnect_40w`  (Polar projection with central meridian 40 degrees west)
-* `ArcticConnect_10e`  (Polar projection with central meridian 10 degrees east)
-* `ArcticConnect_90e`  (Polar projection with central meridian 90 degrees east)
 
-These tile sets require an attribution, which can be accessed with `slippy.attribution()` after the tile set is specified. Check with tile providers for the specifics of attribution.
+<img src="https://raw.githubusercontent.com/Andrew-Reid/d3-slippy/master/images/tiles/Stamen_Watercolor.png" width=400 height=200></img>
 
-And, of course, it is possible that the tile sets available may change. Tile sets offered are available as of February 2019.
+And, of course, it is possible that the tile sets available may change. Tile sets offered are available as of February 2019. See attribution details below.
 
-Temporary: As with `slippy.source()`, It is possible to provide a custom tile set by providing a function to `slippy.tileSet()`:
+### Attribution
 
-```
-slippy.tileSet(function(d) {
-	return "address/"+d.z+"/"+d.x+"/"+d.y+".png";
-})
-```
-
-Where d is an object containing x,y,z properties representing a specific tile. A common tileset object format is intended to be created to replace this behavior.
-
-Temporary: If no tileset is provided, the method will return a list of built in tileSets. This is not a consistent behavior when compared with other methods (where, generally, if no value is set, the current value is returned).
+Most tile sets, and all those with built in objects, require attribution, which can be accessed with `slippy.attribution()` after the tile set is specified. Check with tile providers for the specifics of attribution.
 
 ## Projection Methods
 
@@ -119,11 +179,15 @@ Same as a D3-geoprojection, takes an SVG coordinate in pixels and returns a geog
 
 ### slippy.center(*[longitude,latitude]*)
 
-Same as a D3-geoprojection, takes a geographic coordinate ([longitude,latitude]) and places the map center at this location. *Map size must be correct for the center to be place properly.*
+Almost the same as a D3-geoprojection, takes a geographic coordinate ([longitude,latitude]) and places the map center at this location.  Differs D3-geoprojections in that the center coordinate is a typical latitude/longitude, and not affected by any projection rotation. *Map size must be correct for the center to be placed properly.* 
 
 ### slippy.scale(*scale*)
 
-Largely the same as a D3 geoMercator projection. If an argument is provided, specifies a scale. The default is 960 / (π * 2), where 960 is the default width of the slippy map. If no scale is provided returns the map scale. When zooming this scale does not change - instead the zoom scale is applied on top of the map scale. 
+Largely the same as a D3 geoMercator projection. If an argument is provided, specifies a scale. The default is 960 / (π * 2), where 960 is the default width of the slippy map. If no scale is provided returns the map scale. The map scale represents the scale with no zoom applied (starting state), zoom is applied on top of this internally.
+
+### slippy.setTileDepth(*depth*)
+
+Sets the projection scale to an appropriate value given a specified tile depth.
 
 ### slippy.rotate(*rotate*)
 
@@ -181,8 +245,13 @@ Returns the current zoom identity. Intended to be used when interfacing with `d3
 
 ### slippy.zoomScaleExtent(*[min,max]*)
 
-Takes an array specifying a min and max zoom level for the map. *Unlike other methods, this is expressed in tile units.* Tile scales start at 0 (entire world on one tile). For a given integer scale value (n) the number of tiles needed to map the world is  
+Takes an array specifying a min and max zoom level for the map measured in **tile** units.
+Tile scales start at 0 (entire world on one tile). For a given integer scale value (n) the number of tiles needed to map the world is  
 4^n. This is method is in tile units as tile sets have minimum and maximum scale values in tile units.
+
+If no array is given, returns the zoom scale extent in **zoom** units. This extent can be provided to d3.zoom().scaleExtent to set the bounds of zooming given a specified range of zoom levels specified in tiles.
+
+*This method will be split into two*
 
 ### slippy.zoomTranslateExtent(*extent*)
 
