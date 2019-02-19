@@ -9,26 +9,27 @@
 function geoTile() {
 	// Basic Constants
 	const tau = Math.PI * 2;
-	var lim = 85.051133;
+	var lim = 85.05113;
+	var tileSize = 256;
 
 	// Map Properties:
 	var w = 960;
 	var h = 500;
 	
 	// Projection Values:
-	var pk = w/tau; // projection scale k - default reference for tile placement.
+	var pk = 960/tau; // projection scale k
 	var pc = [0,0]  // projection geographic center
-	var pr = 0;     // central longitude for rotation.
+	var pr = 0      // central longitude for rotation.
 
 	// Zoom Transform Values:
 	var tk = 1;	// zoom transform scale k
 	var tx = w/2; // zoom transform translate x
-	var ty = h/2; // zoom transform translate y	
+	var ty = h/2; // zoom transform translate y
 	
-	// Offsets for other projections:
-	var ox = 0;
-	var oy = 0; 	
-	
+	// Offsets for projections where the north west limit is no in the top left.
+	var ox = function() { return 0 };
+	var oy = function() { return 0 }; 	
+		
 	// The Projection:
 	var p = d3.geoMercator()
 	  .scale(pk)
@@ -37,25 +38,26 @@ function geoTile() {
 	// Tile wrapping and zoom limits:
 	var z0 = 4;
 	var z1 = 13;
-	var extent = {left:-179.99999,top:lim,right:179.9999,bottom:-lim};
-	var wrap = false;
+	var extent = function() { return {left:-179.99999,top:lim,right:179.9999,bottom:-lim}; };
+	var wrap = true;
 	
-	// Tile ordering:
+	// Tile ordering
 	var xyz = true;
-
-	function geoTile(_) {
-		return p(_);
-	}
 	
 	// Tile source & attribution
-	geoTile.xyz = function(_) {
-		return arguments.length ? (xyz = _, geoTile): xyz;
-	}
 	var source = function(d) {
 		return "http://" + "abc"[d.y % 3] + ".tile.openstreetmap.org/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
 	}
 	var a = "Tiles © OpenStreetMap contributors";
-
+	// Tile ordering:
+	geoTile.xyz = function(_) {
+		return arguments.length ? (xyz = _, geoTile): xyz;
+	}
+		  
+	function geoTile(_) {
+		return p(_);
+	}
+	
 	// General Methods
 	geoTile.width = function(_) {
 		return arguments.length ? (w = _, geoTile) : w;
@@ -65,7 +67,7 @@ function geoTile() {
 	}
 	geoTile.size = function(_) {
 		if(arguments.length) {
-			(_ instanceof d3.selection) ? (w = _.attr("width"), h = _.attr("height")) : (w = _[0], h = _[1]);
+			(_ instanceof d3.selection) ? (w = _.attr("width"), h = _.attr("height"), tx = w/2, ty = h/2) : (w = _[0], h = _[1]);
 			return geoTile;
 		}
 		else return [w,h]
@@ -73,17 +75,14 @@ function geoTile() {
 	geoTile.source = function(_) {
 		return arguments.length ? (source = _, geoTile) : source;
 	}
-	geoTile.projection = function(_) {
-		return arguments.length ? (p = _, geoTile) : p;
+	geoTile.projection = function() {
+		return p;
 	}
 	geoTile.attribution = function(_) {
 		return arguments.length ? (a = _, geoTile) : a;
 	}
 	geoTile.wrap = function(_) {
 		return arguments.length ? (wrap = _, geoTile) : wrap;
-	}
-	geoTile.limit = function(_) {
-		return arguments.length ? (lim = _, geoTile) : lim;
 	}
 
 	
@@ -92,10 +91,18 @@ function geoTile() {
 		return p.invert(_);
 	}
 	geoTile.center = function(_) {
-		return arguments.length ? (pc = _, p.center(pc), geoTile): pc;
+		// Need to account for any rotation (divergence from d3.geoProjection typical behavior //
+		var rotate = d3.geoRotation(p.rotate())
+		if(arguments.length) {
+			pc = rotate(_); p.center(pc); return geoTile;
+		}
+		else {
+			return rotate.invert(pc); 
+		}
+		//return arguments.length ? (/*_[0] -= p.rotate()[0], _[1] -= p.rotate()[1], */ pc = _, p.center(pc), geoTile): pc;
 	}	
 	geoTile.scale = function(_) {
-		return arguments.length ? (/*ox = ox/pk*_, oy = oy/pk*_, tx = tx/pk*_, ty = ty/pk*_,*/ pk = _, p.scale(pk), geoTile) : pk; // Scale modifies translate & offset.
+		return arguments.length ? (pk = _, p.scale(pk), geoTile) : pk;
 	}	
 	geoTile.rotate = function(_) {
 		return arguments.length ? (pr = _, p.rotate([pr,0]), geoTile) : pr;
@@ -103,15 +110,12 @@ function geoTile() {
 	geoTile.fit = function(_) {
 		return arguments.length ? (p.fitSize([w,h],_),tx = p.translate()[0],ty = p.translate()[1],pk = p.scale(), geoTile) : "n/a";
 	}
-	geoTile.fitExtent = function(e,f) {
-		return arguments.length > 1 ? (p.fitExtent(e,f),pk = p.scale(),tx = p.translate()[0],ty = p.translate()[1], geoTile) : "n/a";
-	}
 	geoTile.fitMargin = function(m,f) {
 		return arguments.length > 1 ? (p.fitExtent([[m,m],[w-m,h-m]],f), tx = p.translate()[0],ty = p.translate()[1],pk = p.scale(), geoTile) : "n/a";
 	}
 	geoTile.offset = function(_) {
 		return arguments.length ? (ox = _[0], oy = _[1], geoTile): [ox,oy];
-	}
+	}	
 		
 		
 	// Zoom Methods:
@@ -128,19 +132,28 @@ function geoTile() {
 		tx = t.x, ty = t.y, tk = t.k; p.translate([tx,ty]); p.scale(pk*tk); return geoTile;
 	}
 	
-	
-	// Convert between zoom k and tile depth.
+	// Get scale factor for tile depth:
 	geoTile.tileDepth = function(z) {
 		if(arguments.length) {
-			tk = Math.pow(Math.E, ((z + 8) * Math.LN2)) / pk / tau;
-		}
+			return Math.pow(Math.E, ((z + 8) * Math.LN2)) / pk / tau;
+		}	
 		else {
-			
 			var size = pk * tk * tau;
 			var z = Math.max(Math.log(size) / Math.LN2 - 8, 0);
 			return Math.round(z);
 		}
-	}	
+	}
+	
+	// Set tile depth:
+	geoTile.setTileDepth = function(_) {
+		pk *= geoTile.tileDepth(_); p.scale(pk); return geoTile;
+	}
+	
+	// Set/get tile size:
+	geoTile.tileSize = function(_) {
+		return arguments.length ? (tileSize = _, geoTile) : tileSize;
+	}
+		
 
 	// Zoom extent methods:
 	geoTile.zoomScaleExtent = function(_) {
@@ -158,44 +171,46 @@ function geoTile() {
 		}
 	}
 	geoTile.zoomTranslateExtent = function(_) {
+		var e = extent();
 		if (arguments.length) {
-			extent.left = _[0][0];
-			extent.top = _[0][1];
-			extent.right = _[1][0];
-			extent.bottom = _[1][1];			
+			e.left = _[0][0];
+			e.top = _[0][1];
+			e.right = _[1][0];
+			e.bottom = _[1][1];			
 			return geoTile;
 		}
 		else {
-			var x0 = p([extent.left-pr,extent.top])[0] - tx;
-			var y0 = p([extent.left-pr,extent.top])[1] - ty;
-			var x1 = p([extent.right-pr,extent.bottom])[0] - tx;
-			var y1 = p([extent.right-pr,extent.bottom])[1] - ty;
+			var x0 = p([e.left-pr,e.top])[0] - tx;
+			var y0 = p([e.left-pr,e.top])[1] - ty;
+			var x1 = p([e.right-pr,e.bottom])[0] - tx;
+			var y1 = p([e.right-pr,e.bottom])[1] - ty;
 			return [[x0,y0],[x1,y1]];
 		}
 	}
 	geoTile.zoomTranslateConstrain = function() {
-		extent.left = p.invert([0,0])[0];
-		extent.top = p.invert([0,0])[1];
-		extent.right = p.invert([w,h])[0];
-		extent.bottom = p.invert([w,h])[1];
+		var e = extent();
+		e.left = p.invert([0,0])[0];
+		e.top = p.invert([0,0])[1];
+		e.right = p.invert([w,h])[0];
+		e.bottom = p.invert([w,h])[1];
 		
-		var x0 = p([extent.left-pr,extent.top])[0] - tx;
-		var y0 = p([extent.left-pr,extent.top])[1] - ty;
-		var x1 = p([extent.right-pr,extent.bottom])[0] - tx;
-		var y1 = p([extent.right-pr,extent.bottom])[1] - ty;
+		var x0 = p([e.left-pr,e.top])[0] - tx;
+		var y0 = p([e.left-pr,e.top])[1] - ty;
+		var x1 = p([e.right-pr,e.bottom])[0] - tx;
+		var y1 = p([e.right-pr,e.bottom])[1] - ty;
 		return [[x0,y0],[x1,y1]];				
 	}
 
 	// Tile Methods:	
 	// Calculate Tiles:
 	geoTile.tiles = function() {
-		var size = pk * tk * tau;
-		var z = Math.max(Math.log(size) / Math.LN2 - 8, 0); // z, assuming image size of 256 (2^8).  
+		var size = pk * tk * tau / 1.000254;
+		var z = Math.max(Math.log(size) / Math.LN2 - Math.log(tileSize)/Math.log(2), 0); // tile depth 
 		var s = Math.pow(2, z - Math.round(z) + 8);
-				
-		var y0 = p([-180,lim])[1] - oy * tk * pk/w*tau;
-		var x0 = p([-180,lim])[0] - ox * tk * pk/w*tau;
 
+		var y0 = p([-180,lim])[1] - oy.call(this,w,h) * tk * pk/w*tau;
+		var x0 = p([-180,lim])[0] - ox.call(this,w,h) * tk * pk/w*tau;
+		
 		var set = [];
 		var cStart = wrap ? Math.floor((0 - x0) / s) : Math.max(0, Math.floor((0 - x0) / s));
 		var cEnd = Math.max(0, Math.ceil((w - x0) / s));
@@ -209,7 +224,7 @@ function geoTile() {
 					var k = Math.pow(2,Math.round(z));
 					x = (i+k)%k;
 				}
-				if(Math.pow(z,2) > j && Math.pow(z,2) > x) set.push({x:x,y:j,z:Math.round(z),tx:i,ty:j, id:i+"-"+j+"-"+z}) 
+				set.push({x:x,y:j,z:Math.round(z),tx:i,ty:j, id:i+"-"+j+"-"+z}) 
 			}
 		}
 		
@@ -218,7 +233,7 @@ function geoTile() {
 				d.y = (Math.pow(2, d.z) - d.y - 1)
 			})
 		}		
-
+		
 		set.translate = [x0 / s, y0 / s];
 		set.scale = s;
 
@@ -234,279 +249,191 @@ function geoTile() {
 		images.exit().remove();
 		images.enter().append("image").merge(images)
 			.attr("xlink:href", source )
-			.attr("x", function(d) { return d.tx * 256; })
-			.attr("y", function(d) { return d.ty * 256; })
-			.attr("width", 256)
-			.attr("height", 256);	
+			.attr("x", function(d) { return d.tx * tileSize; })
+			.attr("y", function(d) { return d.ty * tileSize; })
+			.attr("width", tileSize)
+			.attr("height", tileSize);	
 	}
 	
 	// Draw on a canvas:
 	geoTile.canvas = function(context) {
 		var set = geoTile.tiles();
-		var k = set.scale / 256, r = set.scale % 1 ? Number : Math.round;
+		var k = set.scale / tileSize, r = set.scale % 1 ? Number : Math.round;
 		var ox = r(set.translate[0] * set.scale);
 		var oy = r(set.translate[1] * set.scale);
 		set.forEach(function(d) {
 			var tile = new Image();
 			tile.src = source(d); // can also be a remote URL e.g. http://
 			tile.onload = function() {
-				context.drawImage(tile,d.tx*256*k+ox,d.ty*256*k+oy,256*k,256*k);
+				context.drawImage(tile,d.tx*tileSize*k+ox,d.ty*tileSize*k+oy,tileSize*k,tileSize*k);
 			};
 		})
-	}	
+	}		
 	
 	// Helper stringify	
 	function stringify(scale, translate) {
-		var k = scale / 256, r = scale % 1 ? Number : Math.round;
+		var k = scale / tileSize, r = scale % 1 ? Number : Math.round;
 		return "translate(" + r(translate[0] * scale) + "," + r(translate[1] * scale) + ") scale(" + k + ")";
 	}
 	
-	// To break out in the future, at least use switch ?:
 	geoTile.tileSet = function(_) {
-	
-		var m = function() {
-			ox = 0;
-			oy = 0;
-			p = d3.geoMercator().scale(pk).translate([w/2,h/2]);
-			lim = 85.05113;
-			xyz = true;
+		if(arguments.length) {
+			a = _.attribution ? _.attribution : "Unknown";
+			p = _.projection ? _.projection.scale(960/tau).translate([0,0]) : d3.geoMercator().scale(960/tau).translate([0,0]);
+			source = _.source ? _.source : (console.log("no source provided, using osm"), a = "Tiles © OpenStreetMap contributors", function(d) { return "http://" + "abc"[d.y % 3] + ".tile.openstreetmap.org/" + d.z + "/" + d.x + "/" + d.y + ".png";  })
+			lim = _.limit ? _.limit : 85.05113;
+			tileSize = _.tileSize ? _.tileSize : 256;
+			ox = _.offsetX ? _.offsetX : function() { return 0 };
+			oy = _.offsetY ? _.offsetY : function() { return  0 };
+			z0 = _.minDepth ? _.minDepth : 1;
+			z1 = _.maxDepth ? _.maxDepth : 13;
+			wrap = _.wrap ? _.wrap : false;
+			xyz = _.xyz ? _.xyz : true; // tile ordering
 		}
-		// arctic 
-		var a0 = function(lon) {
-			lim = 90;
-			p = d3.geoAzimuthalEqualArea().rotate([lon,-90])
-			ox = w/2 + (960-w)/2;
-			oy = h/2 + (960-h)/2;
-			xyz = true;
-		}
-		
-		var sets = {
-			// CARTO DB //***********************************************************************
-			"CartoDB_Positron" : function() {
-				m(), a = "© OpenStreetMap © CartoDB";
-				source = function(d) {
-					return "https://cartodb-basemaps-b.global.ssl.fastly.net/light_all/"+d.z+"/"+d.x+"/"+d.y+".png";
-				}
-			},
-			"CartoDB_PositronNoLabels" : function() {
-				m(), a = "© OpenStreetMap © CartoDB";
-				source = function(d) {
-					return "https://cartodb-basemaps-b.global.ssl.fastly.net/light_nolabels/"+d.z+"/"+d.x+"/"+d.y+".png";
-				}								
-			},
-			"CartoDB_PositronOnlyLabels" : function() {
-				m(), a = "© OpenStreetMap © CartoDB";
-				source = function(d) {
-					return "https://cartodb-basemaps-b.global.ssl.fastly.net/light_only_labels/"+d.z+"/"+d.x+"/"+d.y+".png";
-				}				
-			},
-			"CartoDB_DarkMatter" : function() {
-				m(), a = "© OpenStreetMap © CartoDB";
-				source = function(d) {
-					return "https://cartodb-basemaps-b.global.ssl.fastly.net/dark_all/"+d.z+"/"+d.x+"/"+d.y+".png";
-				}				
-			},
-			"CartoDB_DarkMatterNoLabels" : function() {
-				m(), a = "© OpenStreetMap © CartoDB";
-				source = function(d) {
-					return "https://cartodb-basemaps-b.global.ssl.fastly.net/dark_nolabels/"+d.z+"/"+d.x+"/"+d.y+".png";
-				}				
-			},
-			"CartoDB_DarkMatterOnlyLabels" : function() {
-				m(), a = "© OpenStreetMap © CartoDB";
-				source = function(d) {
-					return "https://cartodb-basemaps-b.global.ssl.fastly.net/dark_only_labels/"+d.z+"/"+d.x+"/"+d.y+".png";
-				}				
-			},
-			"CartoDB_Voyager" : function() {
-				m(), a = "© OpenStreetMap © CartoDB";
-				source = function(d) {
-					return "https://cartodb-basemaps-b.global.ssl.fastly.net/rastertiles/voyager/"+d.z+"/"+d.x+"/"+d.y+".png";
-				}				
-			},
-			// ESRI //***********************************************************************
-			"ESRI_WorldTerrain" : function() {
-				m(), a = "Tiles © Esri - Source: USGS, Esri, TANA, DeLorme, and NPS"
-				source = function(d) {
-					return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
-				}				
-			},
-			"ESRI_WorldShadedRelief" : function() {
-				m(), a = "Tiles © Esri - Source: Esri";
-				source = function(d) {
-					return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
-				}				
-			},
-			"ESRI_WorldPhysical" : function() {
-				m(), a = "Tiles © Esri - Source: US National Park Service";
-				source = function(d) {
-					return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
-				}					
-			},
-			"ESRI_WorldStreetMap" : function() {
-				m(), a = "Tiles © Esri - Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom";
-				source = function(d) {
-					return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
-				}				
-			},
-			"ESRI_WorldTopoMap": function() {
-				m(), a = "Tiles © Esri - Source: Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community";
-				source = function(d) {
-					return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
-				}					
-			},
-			"ESRI_WorldImagery": function() {
-				m(), a = "Tiles © Esri - Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community";
-				source = function(d) {
-					return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
-				}					
-			},
-			"ESRI_OceanBasemap": function() {
-				m(), a = "Tiles © Esri - Source: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri";
-				source = function(d) {
-					return "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
-				}					
-			},
-			"ESRI_NGWorld" : function() {
-				m(), a = "Tiles © Esri - Source:  National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC";
-				source = function(d) {
-					return "https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
-				}					
-			},
-			"ESRI_Gray": function() {
-				m(), a = "Tiles © Esri - Source:  Esri, DeLorme, NAVTEQ";
-				source = function(d) {
-					return "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";
-				}				
-			},
-			// Open Street Map // *********************************************************************
-			"OSM_Topo" : function() {
-				m(), a = "Tiles © OpenStreetMap contributors";
-				source = function(d) {
-					return "https://tile.opentopomap.org/"+d.z+"/"+d.x+"/"+d.y+".png"; 
-				}			
-			},
-			"OSM" : function() {
-				m(), a = "Tiles © OpenStreetMap contributors";
-				source = function(d) {
-					return "https://tile.opentopomap.org/"+d.z+"/"+d.x+"/"+d.y+".png"; 
-				}				
-			},
-			// STAMEN // **************************************************************************
-			"Stamen_Toner" : function() {
-				m(), a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
-				source = function(d) {
-					return "https://stamen-tiles.a.ssl.fastly.net/toner/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
-				}				
-			},
-			"Stamen_TonerBackground": function() {
-				m(), a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
-				source = function(d) {
-					return "https://stamen-tiles.a.ssl.fastly.net/toner-background/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
-				}				
-			},
-			"Stamen_TonerLines": function() {
-				m(), a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
-				source = function(d) {
-					return "https://stamen-tiles.a.ssl.fastly.net/toner-lines/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
-				}					
-			},
-			"Stamen_TonerLite": function() {
-				m(), a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
-				source = function(d) {
-					return "https://stamen-tiles.a.ssl.fastly.net/toner-lite/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
-				}				
-			},
-			"Stamen_Terrain" : function() {
-				m(), a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
-				source = function(d) {
-					return "https://stamen-tiles.a.ssl.fastly.net/terrain/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
-				}				
-			},
-			"Stamen_TerrainBackground" : function() {
-				m(), a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
-				source = function(d) {
-					return "https://stamen-tiles.a.ssl.fastly.net/terrain-background/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
-				}				
-			},
-			"Stamen_TerrainLines": function() {
-				m(), a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL."			
-				source = function(d) {
-					return "https://stamen-tiles.a.ssl.fastly.net/terrain-lines/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
-				}	
-			},
-			"Stamen_Watercolor": function() {
-				m(); a = "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY SA."			
-				source = function(d) {
-					return "https://stamen-tiles.a.ssl.fastly.net/watercolor/" + d.z + "/" + d.x + "/" + d.y + ".png"; 
-				}					
-			},
-			
-			// Arctic Connect
-			"ArcticConnect_180": function() {
-				a0(180); a = "Map © ArcticConnect. Data © OpenStreetMap contributors",
-				source = function(d) {
-					return "http://a.tiles.arcticconnect.ca/osm_3571/"+d.z+"/"+d.x+"/"+d.y+".png";
-				}
-			},
-			"ArcticConnect_150w": function() {
-				a0(150); a = "Map © ArcticConnect. Data © OpenStreetMap contributors",
-				source = function(d) {
-					return "http://a.tiles.arcticconnect.ca/osm_3572/"+d.z+"/"+d.x+"/"+d.y+".png";
-				}
-			},
-			"ArcticConnect_100w": function() {
-				a0(100); a = "Map © ArcticConnect. Data © OpenStreetMap contributors",
-				source = function(d) {
-					return "http://a.tiles.arcticconnect.ca/osm_3573/"+d.z+"/"+d.x+"/"+d.y+".png";
-				}
-			},
-			"ArcticConnect_40w": function() {
-				a0(40); a = "Map © ArcticConnect. Data © OpenStreetMap contributors",
-				source = function(d) {
-					return "http://a.tiles.arcticconnect.ca/osm_3574/"+d.z+"/"+d.x+"/"+d.y+".png";
-				}
-			},
-			"ArcticConnect_10e": function() {
-				a0(-10); a = "Map © ArcticConnect. Data © OpenStreetMap contributors",
-				source = function(d) {
-					return "http://a.tiles.arcticconnect.ca/osm_3575/"+d.z+"/"+d.x+"/"+d.y+".png";
-				}
-			},
-			"ArcticConnect_90e": function() {
-				a0(-90); a = "Map © ArcticConnect. Data © OpenStreetMap contributors",
-				source = function(d) {
-					return "http://a.tiles.arcticconnect.ca/osm_3576/"+d.z+"/"+d.x+"/"+d.y+".png";
-				}
-			}
-					
-			
-		} // close sets.
-			
-			
-		if (_ == undefined) {
-			return Object.keys(sets);
-		}
-		
-		else if(typeof _ == "function") {
-			source = _; return geoTile;
-		}
-				
-		else if (sets[_]) {
-			sets[_](); return geoTile;
-		}
-		else {
-			console.log("Tileset not recognized, using OSM");
-			sets.OSM();
-			return geoTile;
-		}
-
-		return geoTile;
+		return geoTile;		
 	}
-
-	return geoTile;
+  return geoTile;
 
 }
+
+
+		
+var tileSets = {
+  CartoDB_Positron : {
+    type:"tileset",
+    attribution: "© OpenStreetMap © CartoDB",
+    source: function(d) { return "https://cartodb-basemaps-b.global.ssl.fastly.net/light_all/"+d.z+"/"+d.x+"/"+d.y+".png"; }
+  },
+  CartoDB_PositronNoLabels : {
+    type:"tileset",
+    attribution: "© OpenStreetMap © CartoDB",
+    source: function(d) { return "https://cartodb-basemaps-b.global.ssl.fastly.net/light_nolabels/"+d.z+"/"+d.x+"/"+d.y+".png"; }
+  },
+  CartoDB_PositronOnlyLabels : {
+    type: "tileset",
+    attribution: "© OpenStreetMap © CartoDB",
+    source: function(d) { return "https://cartodb-basemaps-b.global.ssl.fastly.net/light_only_labels/"+d.z+"/"+d.x+"/"+d.y+".png"; }
+  },
+  CartoDB_DarkMatter : {
+    type: "tileset",
+    attribution: "© OpenStreetMap © CartoDB",
+    source: function(d) { return "https://cartodb-basemaps-b.global.ssl.fastly.net/dark_all/"+d.z+"/"+d.x+"/"+d.y+".png"; }
+  },
+  CartoDB_DarkMatterNoLabels : {
+    type: "tileset", 
+    attribution: "© OpenStreetMap © CartoDB",
+    source: function(d) {return "https://cartodb-basemaps-b.global.ssl.fastly.net/dark_nolabels/"+d.z+"/"+d.x+"/"+d.y+".png"; }
+  },
+  CartoDB_DarkMatterOnlyLabels : {
+    type: "tileset",
+	attribution: "© OpenStreetMap © CartoDB",
+	source: function(d) { return "https://cartodb-basemaps-b.global.ssl.fastly.net/dark_only_labels/"+d.z+"/"+d.x+"/"+d.y+".png"; }
+  },
+  CartoDB_Voyager : {
+    type: "tileset",
+    attribution: "© OpenStreetMap © CartoDB",
+    source: function(d) { return "https://cartodb-basemaps-b.global.ssl.fastly.net/rastertiles/voyager/"+d.z+"/"+d.x+"/"+d.y+".png";}
+  },
+  ESRI_WorldTerrain : {
+    type: "tilset",
+    attribution: "Tiles © Esri - Source: USGS, Esri, TANA, DeLorme, and NPS",
+    source: function(d) { return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";}
+  },
+  ESRI_WorldShadedRelief : {
+    type: "tileset",
+    attribution: "Tiles © Esri - Source: Esri",
+    source: function(d) {return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png"; }			
+  },
+  ESRI_WorldPhysical : {
+    type:"tileset",
+	attribution: "Tiles © Esri - Source: US National Park Service",
+	source: function(d) { return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png"; }			
+  },
+  ESRI_WorldStreetMap : {
+    type:"tileset",
+	attribution:"Tiles © Esri - Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom",
+	source: function(d) { return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png"; }	
+  },
+  ESRI_WorldTopoMap : {
+	type: "tileset",
+    attribution: "Tiles © Esri - Source: Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community",
+    source: function(d) { return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png"; }			
+  },
+  ESRI_WorldImagery : {
+    type:"tileset",
+    attribution: "Tiles © Esri - Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+    source : function(d) {	return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png";	}		
+  },
+  ESRI_OceanBasemap : {
+    type: "tileset",
+	attribution:"Tiles © Esri - Source: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri",
+	source: function(d) { return "https://server.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png"; }		
+  },
+  ESRI_NGWorld : {
+    type: "tileset",
+    attribution: "Tiles © Esri - Source:  National Geographic, Esri, DeLorme, NAVTEQ, UNEP-WCMC, USGS, NASA, ESA, METI, NRCAN, GEBCO, NOAA, iPC",
+    source : function(d) { return "https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png"; }		
+  },
+  ESRI_Gray : {
+    type: "tileset",
+	attribution: "Tiles © Esri - Source:  Esri, DeLorme, NAVTEQ",
+    source : function(d) { return "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/"+d.z+"/"+d.y+"/"+d.x+".png"; }			
+  },
+  OSM_Topo : {
+    type: "tileset",
+    attribution: "Tiles © OpenStreetMap contributors",
+    source: function(d) { return "https://tile.opentopomap.org/"+d.z+"/"+d.x+"/"+d.y+".png"; }
+  },
+  OSM: {
+    type:"tileset",
+    attribution: "Tiles © OpenStreetMap contributors",
+    source: function(d) { return "https://" + "abc"[d.y % 3] + ".tile.openstreetmap.org/" + d.z + "/" + d.x + "/" + d.y + ".png"; }		
+  },
+  Stamen_Toner : {
+    type: "tileset",
+    attribution: "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.",
+    source: function(d) { return "https://stamen-tiles.a.ssl.fastly.net/toner/" + d.z + "/" + d.x + "/" + d.y + ".png"; }			
+  },
+  Stamen_TonerBackground : {
+    type:"tileset",
+    attribution: "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.",
+    source: function(d) { return "https://stamen-tiles.a.ssl.fastly.net/toner-background/" + d.z + "/" + d.x + "/" + d.y + ".png"; }			
+  },
+  Stamen_TonerLines : {
+    type:"tileset",
+    attribution:"Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.",
+    source: function(d) { return "https://stamen-tiles.a.ssl.fastly.net/toner-lines/" + d.z + "/" + d.x + "/" + d.y + ".png"; }			
+  },
+  Stamen_TonerLite : {
+    type:"tileset",
+    attribution: "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.",
+    source: function(d) { return "https://stamen-tiles.a.ssl.fastly.net/toner-lite/" + d.z + "/" + d.x + "/" + d.y + ".png"; }			
+  },
+  Stamen_Terrain : {
+    type:"tileset",
+    attribution: "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.",
+    source: function(d) { return "https://stamen-tiles.a.ssl.fastly.net/terrain/" + d.z + "/" + d.x + "/" + d.y + ".png"; }			
+  },
+  Stamen_TerrainBackground : {
+    type:"tileset",
+    attribution: "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.",
+    source: function(d) {	return "https://stamen-tiles.a.ssl.fastly.net/terrain-background/" + d.z + "/" + d.x + "/" + d.y + ".png"; }			
+  },
+  Stamen_TerrainLines : {
+    type:"tileset",
+	attribution: "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.",
+	source: function(d) { return "https://stamen-tiles.a.ssl.fastly.net/terrain-lines/" + d.z + "/" + d.x + "/" + d.y + ".png"; }			
+  },
+  Stamen_Watercolor: {
+    type:"tileset",
+    attribution:"Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY SA.",
+    source: function(d) {return "https://stamen-tiles.a.ssl.fastly.net/watercolor/" + d.z + "/" + d.x + "/" + d.y + ".png"; }			
+  }
+}
+
+
+  // Tilesets:
+  exports.tileSet = tileSets;
   exports.geoSlippy = geoTile;
 
   Object.defineProperty(exports, '__esModule', { value: true });
