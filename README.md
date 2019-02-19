@@ -55,7 +55,7 @@ Tile sets can be from one of the built in tile sources and attributions. This me
 
 * `CartoDB_Positron`
 
-<img src="https://github.com/Andrew-Reid/d3-slippy/images/tiles/CartoDB_Positron.png"></img>
+<img src="https://raw.github.com/Andrew-Reid/d3-slippy/images/tiles/CartoDB_Positron.png"></img>
 
 * `CartoDB_PositronNoLabels`
 * `CartoDB_PositronOnlyLabels`
