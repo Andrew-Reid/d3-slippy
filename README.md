@@ -54,6 +54,9 @@ If provided, sets the tile set to be used. Some tile sets modify the projection 
 Tile sets can be from one of the built in tile sources and attributions. This method takes one of the names of those tile sources and sets the appropriate tile source and attribution. Valid values are:
 
 * `CartoDB_Positron`
+
+<img src="/d3-slippy/images/tiles/CartoDB_Positron.png"></img>
+
 * `CartoDB_PositronNoLabels`
 * `CartoDB_PositronOnlyLabels`
 * `CartoDB_DarkMatter`
