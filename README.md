@@ -1,6 +1,6 @@
 # d3-slippy
 
-*Experimental at this point. Structure likely to change*
+*Very Experimental at this point - coming along, but a ways to go. Structure likely to change without warning*
 
 The goal of `d3-slippy` is to minimize the interface with tile services and tile coordinates while making D3 maps. It achieves this goal by relying on a Mercator projection to place the tiles, allowing use of geographic coordinates throughout. In a sense `d3-slippy` is a modified generic D3 Mercator projection.
 
