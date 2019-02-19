@@ -17,7 +17,7 @@ function geoTile() {
 	var h = 500;
 	
 	// Projection Values:
-	var pk = 960/tau; // projection scale k
+	var pk = w/tau; // projection scale k
 	var pc = [0,0]  // projection geographic center
 	var pr = 0      // central longitude for rotation.
 
@@ -204,7 +204,7 @@ function geoTile() {
 	// Tile Methods:	
 	// Calculate Tiles:
 	geoTile.tiles = function() {
-		var size = pk * tk * tau / 1.000254;
+		var size = pk * tk * tau;
 		var z = Math.max(Math.log(size) / Math.LN2 - Math.log(tileSize)/Math.log(2), 0); // tile depth 
 		var s = Math.pow(2, z - Math.round(z) + 8);
 
