@@ -17,9 +17,9 @@ Returns a new slippy map projection.
 
 If width or height are provided, sets the width/height of the map. Unlike a typical D3 projection this is required to know how many tiles to display. If no argument is provided, returns the current width/height. Default height is 500 while default width is 960.
 
-### slippy.size(*[width,height] or selection*)
+### slippy.size(*[width,height] or selection or element*)
 
-A convenience method that sets both size and width. If the provided argument is a D3 selection, will set the dimensions of the map to match the dimensions of the selected element (most commonly used for the SVG holding the map). If the provided argument is not a D3 selection, d3-slippy assumes an array has been provided indicating width and height of the map respectively.
+A convenience method that sets both size and width. If the provided argument is a D3 selection, will set the dimensions of the map to match the dimensions of the selected element (most commonly used for the SVG holding the map). If the provided element is an SVG element, will set the dimensions of the map to match the dimensions of the provided element. If the provided argument is not a D3 selection, d3-slippy assumes an array has been provided indicating width and height of the map respectively.
 
 If no argument is provided, returns the current dimensions of the map.
 
@@ -195,7 +195,7 @@ Unlike a D3-geoprojection, this method does not take an array. It can be provide
 
 ### slippy.fit(*feature*)
 
-Similar to `D3-geoprojection.fitSize()`, but as size is specified either by default or by using `slippy.size()`/`slippy.height()`/`slippy.width()`, the size is already known. Takes a geojson feature and modifies the projection so that it fits within the slippy map bounds. *Does not take an array of geojson features.*
+Similar to `D3-geoprojection.fitSize()`, but as size is specified either by default or by using `slippy.size()`/`slippy.height()`/`slippy.width()`, the size is already known. Takes a geojson feature and modifies the projection so that it fits within the slippy map bounds. Can take an array of geojson features.
 
 ### slippy.fitMargin(*margin,feature*)
 
