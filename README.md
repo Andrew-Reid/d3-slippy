@@ -17,7 +17,7 @@ Returns a new slippy map projection.
 
 If width or height are provided, sets the width/height of the map. Unlike a typical D3 projection this is required to know how many tiles to display. If no argument is provided, returns the current width/height. Default height is 500 while default width is 960.
 
-### slippy.size(*[width,height] or selection or element*)
+### slippy.size(*[width,height] or d3-selection or SVGelement*)
 
 A convenience method that sets both size and width. If the provided argument is a D3 selection, will set the dimensions of the map to match the dimensions of the selected element (most commonly used for the SVG holding the map). If the provided element is an SVG element, will set the dimensions of the map to match the dimensions of the provided element. If the provided argument is not a D3 selection, d3-slippy assumes an array has been provided indicating width and height of the map respectively.
 
